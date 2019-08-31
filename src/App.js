@@ -48,12 +48,11 @@ class App extends Component {
 					<Route exact path="/" component={Home} />
 					<Route path="/checkout" component={Checkout} />
 					<Route path="/shop" component={Shop} />
-					<Route path="/:category" component={Shop} />
-
 					<Route
 						path="/account"
 						render={() => (this.props.currentUser ? <Redirect to="/" /> : <Account />)}
 					/>
+					<Route path="/:category" component={Shop} />
 				</Switch>
 			</div>
 		);

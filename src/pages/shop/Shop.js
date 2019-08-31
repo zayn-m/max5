@@ -34,7 +34,12 @@ class Shop extends React.Component {
 	}
 
 	fetchData = async () => {
-		const data = await getProducts(this.props.match.params.category);
+		let data;
+		if (this.props.match.params.category) {
+			data = await getProducts(this.props.match.params.category);
+		} else {
+			data = await getProducts('boxing');
+		}
 
 		this._isMounted && this.setState({ loading: false, products: data });
 	};
