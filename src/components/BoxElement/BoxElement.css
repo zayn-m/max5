@@ -1,0 +1,21 @@
+#box-wrapper {
+	background: #f5293e;
+	border: 2px solid red;
+	height: 25rem;
+	width: 25rem;
+	position: relative;
+	box-shadow: 0 0 0 50px #d9d8e9;
+	margin-left: 6rem;
+	margin-top: -18rem;
+	transform: rotate(-320deg);
+}
+
+#box-wrapper img {
+	transform: rotate(320deg);
+}
+
+@media screen and (max-width: 660px) {
+	#box-wrapper {
+		margin-top: 0;
+	}
+}
