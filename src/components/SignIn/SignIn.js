@@ -9,6 +9,8 @@ import FormInput from '../FormInput/FormInput';
 
 class SignIn extends React.Component {
 	state = {
+		disabled: false,
+		error: false,
 		email: '',
 		password: ''
 	};
@@ -20,15 +22,19 @@ class SignIn extends React.Component {
 
 	handleSubmit = async (e) => {
 		e.preventDefault();
+		this.setState({ disabled: true });
 		const { email, password } = this.state;
 
 		try {
 			await auth.signInWithEmailAndPassword(email, password);
 			this.setState({
 				email: '',
-				password: ''
+				password: '',
+				disabled: false,
+				error: false
 			});
 		} catch (e) {
+			this.setState({ error: true, disabled: false });
 			console.log(e.message);
 		}
 	};
@@ -40,6 +46,11 @@ class SignIn extends React.Component {
 				<span>Sign in with your email and password</span>
 
 				<form onSubmit={this.handleSubmit}>
+					{this.state.error && (
+						<div className="alert alert-danger" role="alert">
+							Invalid username / password! Please try again.
+						</div>
+					)}
 					<FormInput
 						type="email"
 						name="email"
@@ -59,7 +70,7 @@ class SignIn extends React.Component {
 					/>
 
 					<div className="buttons">
-						<button className="form-button btn btn-danger" type="submit">
+						<button className="form-button btn btn-danger" type="submit" disabled={this.state.disabled}>
 							Sign In
 						</button>
 						<button
