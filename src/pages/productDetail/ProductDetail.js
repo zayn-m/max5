@@ -31,7 +31,7 @@ class ProductDetail extends React.Component {
     }
 
     selectItemHandler = (category, id) => {
-        const url = `http://localhost:3000/shop/${category}/${id}`;
+        const url = `https://max5-app.herokuapp.com/shop/${category}/${id}`;
         window.open(url, '_blank');
     }
 
