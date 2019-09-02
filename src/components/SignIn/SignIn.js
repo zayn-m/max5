@@ -1,7 +1,5 @@
 import React from 'react';
 
-import './SignIn.scss';
-
 import { auth, signInWithGoogle } from '../../firebase/firebaseUtils';
 
 import GoogleIcon from '../../assets/images/icons/google.png';

@@ -69,14 +69,50 @@ export const createUserCart = async (userAuth, cartItems) => {
 	}
 };
 
-export const getProducts = async (title) => {
+export const getProducts = async (title, startAt, itemsPerPage) => {
 	const productRef = firestore.collection('products').doc(title);
 
 	const snapshot = await productRef.get();
 	if (snapshot.exists) {
-		return snapshot.data();
+		let data = [];
+		for (let i = startAt; i < itemsPerPage + startAt; i++) {
+			if (!snapshot.data().items[i]) {
+				break;
+			} else {
+				data.push(snapshot.data().items[i]);
+			}
+		}
+		let finalData;
+
+		if (data.length) {
+			finalData = { title: snapshot.data().title, items: [ ...data ] };
+		} else {
+			finalData = null;
+		}
+
+		return finalData;
 	}
 };
+
+export const getProductByCategory = async (category, productId) => {
+	const productRef = firestore.collection('products').doc(category);
+	const snapshot = await productRef.get();
+
+	if (snapshot.exists) {
+		const p = snapshot.data().items.filter((p) => p.id === productId);
+		if (p) {
+			return { ...p[0] };
+		}
+	}
+};
+
+export const getRecommendations = async () => {
+	const snapshot = await firestore.collection('products').get();
+	const categories =   snapshot.docs.map(doc => doc.id);
+	const randomElement = (Math.random()*categories.length).toFixed(0)
+	return getProducts(categories[randomElement], 0, 8) 
+
+}
 
 const provider = new firebase.auth.GoogleAuthProvider();
 provider.setCustomParameters({ prompt: 'select_account' });

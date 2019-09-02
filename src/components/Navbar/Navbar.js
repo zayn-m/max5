@@ -69,14 +69,14 @@ const navbar = ({ match, currentUser, hidden }) => (
 							<div>
 								<Link
 									to=""
-									className="nav-link dropdown-toggle m-1 p-0"
+									className="nav-link dropdown-toggle m-2 p-0"
 									id="navbarDropdown"
 									role="button"
 									data-toggle="dropdown"
 									aria-haspopup="true"
 									aria-expanded="false"
 								>
-									<i className="fas fa-user-circle fa-2x" />
+									<i className="fas fa-user-circle fa-1x" />
 								</Link>
 
 								<div className="dropdown-menu" aria-labelledby="navbarDropdown">

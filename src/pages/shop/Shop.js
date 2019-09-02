@@ -2,9 +2,13 @@ import React from 'react';
 import { getProducts } from '../../firebase/firebaseUtils';
 
 import Fade from 'react-reveal/Fade';
+import Pagination from 'react-js-pagination';
+
 import CircleElement from '../../components/CircleElement/CircleElement';
 import BoxElement from '../../components/BoxElement/BoxElement';
 import Spinner from '../../components/Spinner/Spinner';
+import ProductOverview from '../../components/ProductOverview/ProductOverview';
+
 import NoDataImg from '../../assets/images/error/no-data.png';
 
 class Shop extends React.Component {
@@ -16,10 +20,19 @@ class Shop extends React.Component {
 
 	state = {
 		loading: true,
-		products: null
+		products: null,
+		currentPage: 1,
+		itemsPerPage: 2,
+		totalItemCount: 20,
+		activePage: 1
 	};
 
 	componentDidUpdate(prevProps, prevState, snapshot) {
+		// For pagination
+		const isDifferentPage = this.state.currentPage !== prevState.currentPage;
+		if (isDifferentPage) this._isMounted && this.fetchData();
+
+		// Checking if url params are different
 		if (prevProps.match.params.category !== this.props.match.params.category) {
 			this._isMounted && this.fetchData();
 		}
@@ -33,15 +46,28 @@ class Shop extends React.Component {
 		this._isMounted = false;
 	}
 
+	handlePageChange = (pageNumber) => {
+		this.setState({ currentPage: pageNumber });
+	};
+
 	fetchData = async () => {
 		let data;
+		const { currentPage, itemsPerPage } = this.state;
+		const startAt = currentPage * itemsPerPage - itemsPerPage;
+
 		if (this.props.match.params.category) {
-			data = await getProducts(this.props.match.params.category);
+			data = await getProducts(this.props.match.params.category, startAt, itemsPerPage);
 		} else {
-			data = await getProducts('boxing');
+			data = await getProducts('boxing', startAt, itemsPerPage);
 		}
 
 		this._isMounted && this.setState({ loading: false, products: data });
+	};
+
+	selectProductHandler = (product, category) => {
+		this.props.history.push({
+			pathname: `/shop/${category}/${product.id}`
+		});
 	};
 
 	render() {
@@ -54,7 +80,11 @@ class Shop extends React.Component {
 						<Fade right key={item.id}>
 							<div className="row" style={{ overflow: 'hidden' }}>
 								<div className="col-12 p-0 no-gutters ml-auto h-100">
-									<BoxElement item={item} />
+									<ProductOverview
+										shape="box-wrapper"
+										item={item}
+										clicked={() => this.selectProductHandler(item, this.state.products.title)}
+									/>
 								</div>
 							</div>
 						</Fade>
@@ -64,7 +94,11 @@ class Shop extends React.Component {
 						<Fade left key={item.id}>
 							<div className="row">
 								<div className="col-12 p-0 no-gutters mr-auto h-100">
-									<CircleElement item={item} />
+									<ProductOverview
+										shape="circle-wrapper"
+										item={item}
+										clicked={() => this.selectProductHandler(item, this.state.products.title)}
+									/>
 								</div>
 							</div>
 						</Fade>
@@ -94,6 +128,16 @@ class Shop extends React.Component {
 				) : (
 					content
 				)}
+				<Pagination
+					innerClass="pagination justify-content-center"
+					itemClass="page-item"
+					linkClass="page-link"
+					activePage={this.state.currentPage}
+					itemsCountPerPage={10}
+					totalItemsCount={450}
+					pageRangeDisplayed={5}
+					onChange={this.handlePageChange}
+				/>
 			</div>
 		);
 	}

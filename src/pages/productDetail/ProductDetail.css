@@ -1,0 +1,11 @@
+.product-detail {
+    margin-top: 2rem;
+    height: 70vh;
+}
+
+
+@media screen and (max-width: 980px) {
+	.product-detail {
+        height: auto;
+    }
+}

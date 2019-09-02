@@ -1,0 +1,10 @@
+.product-card {
+	width: 15rem;
+	background-color: #f9e9ee;
+	margin: 5px;
+}
+
+.product-card:hover {
+	box-shadow: 0 2px 4px #ccc;
+	cursor: pointer;
+}

@@ -13,6 +13,7 @@ import Home from './pages/home/Home';
 import Shop from './pages/shop/Shop';
 import Account from './pages/account/Account';
 import Checkout from './pages/checkout/Checkout';
+import ProductDetail from './pages/productDetail/ProductDetail';
 
 class App extends Component {
 	unsubscribeFromAuth = null;
@@ -47,7 +48,8 @@ class App extends Component {
 				<Switch>
 					<Route exact path="/" component={Home} />
 					<Route path="/checkout" component={Checkout} />
-					<Route path="/shop" component={Shop} />
+					<Route exact path="/shop" component={Shop} />
+					<Route path="/shop/:category/:productId" component={ProductDetail} />
 					<Route
 						path="/account"
 						render={() => (this.props.currentUser ? <Redirect to="/" /> : <Account />)}

@@ -1,7 +1,5 @@
 import React from 'react';
 
-import './Account.scss';
-
 import SignIn from '../../components/SignIn/SignIn';
 import SignUp from '../../components/Signup/Signup';
 

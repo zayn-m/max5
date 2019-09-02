@@ -21,7 +21,7 @@ const stripeCheckoutButton = ({ price, currentUser, clearCart }) => {
 			name="MAX 5"
 			billingAddress
 			shippingAddress
-			description={`Your total is $${price}`}
+			description={`Your total is $${price.toFixed(2)}`}
 			amount={priceStripe}
 			panelLabel="Pay Now"
 			token={onToken}

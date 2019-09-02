@@ -45,6 +45,7 @@ const cartReducer = (state = initialState, action) => {
 					cartItems: []
 				};
 			}
+			break;
 		default:
 			return state;
 	}
