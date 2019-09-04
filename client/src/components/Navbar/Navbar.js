@@ -83,9 +83,9 @@ const navbar = ({ match, currentUser, hidden }) => (
 									<a className="dropdown-item" href="#">
 										Profile
 									</a>
-									<a className="dropdown-item" href="#">
+									<Link to="/user/purchase-history" className="dropdown-item">
 										Purchase history
-									</a>
+									</Link>
 									<div className="dropdown-divider" />
 									<a className="dropdown-item" href="" onClick={() => auth.signOut()}>
 										Sign out

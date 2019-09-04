@@ -14,6 +14,7 @@ import Shop from './pages/shop/Shop';
 import Account from './pages/account/Account';
 import Checkout from './pages/checkout/Checkout';
 import ProductDetail from './pages/productDetail/ProductDetail';
+import PurchaseHistory from './pages/purchaseHistory/PurchaseHistory';
 
 class App extends Component {
 	unsubscribeFromAuth = null;
@@ -53,6 +54,10 @@ class App extends Component {
 					<Route
 						path="/account"
 						render={() => (this.props.currentUser ? <Redirect to="/" /> : <Account />)}
+					/>
+					<Route
+						path="/user/purchase-history"
+						render={() => (!this.props.currentUser ? <Redirect to="/" /> : <PurchaseHistory />)}
 					/>
 					<Route path="/:category" component={Shop} />
 				</Switch>

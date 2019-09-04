@@ -4,8 +4,9 @@ import { clearCart } from '../../store/actions/cart';
 import axios from 'axios';
 
 import StripeCheckout from 'react-stripe-checkout';
+import { createOrder } from '../../firebase/firebaseUtils';
 
-const stripeCheckoutButton = ({ price, currentUser, clearCart }) => {
+const stripeCheckoutButton = ({ price, currentUser, cartItems, clearCart, done }) => {
 	const priceStripe = price * 100;
 	const publickey = 'pk_test_tzw0hlS36jQyBNpjmGpqx9v700pPqjEoeo';
 
@@ -20,8 +21,12 @@ const stripeCheckoutButton = ({ price, currentUser, clearCart }) => {
 				}
 			})
 				.then((res) => {
-					alert('Payment successful');
-					clearCart(currentUser);
+					// alert('Payment successful');
+					console.log('Payment successful');
+					createOrder(currentUser, token, cartItems).then(() => {
+						done();
+						clearCart(currentUser);
+					});
 				})
 				.catch((err) => {
 					console.log('Payment error: ', JSON.parse(err));
@@ -34,19 +39,22 @@ const stripeCheckoutButton = ({ price, currentUser, clearCart }) => {
 		<StripeCheckout
 			label="Pay Now"
 			name="MAX 5"
+			email={currentUser ? currentUser.email : ''}
 			billingAddress
-			shippingAddress
+			shippingAddress={false}
 			description={`Your total is $${price.toFixed(2)}`}
 			amount={priceStripe}
 			panelLabel="Pay Now"
 			token={onToken}
 			stripeKey={publickey}
+			panelLabel="Give Money"
 		/>
 	);
 };
 
 const mapStateToProps = (state) => ({
-	currentUser: state.userReducer.currentUser
+	currentUser: state.userReducer.currentUser,
+	cartItems: state.cartReducer.cartItems
 });
 
 const mapDispatchToProps = (dispatch) => ({

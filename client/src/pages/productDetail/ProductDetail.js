@@ -80,6 +80,7 @@ class ProductDetail extends React.Component {
 								</div>
 								<button
 									className="btn btn-danger mt-3"
+									disabled={qty > 0 ? false : true}
 									onClick={() => this.addToCart(product, this.props.currentUser, qty)}
 								>
 									Add to Cart
