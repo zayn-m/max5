@@ -8,7 +8,6 @@ const products = ({ categories, selectedCat, products, handleChange, removeItem 
 				<h1 className="text-left">
 					Products{' '}
 					<select className="col-6 col-md-3 ml-auto form-control" onChange={handleChange}>
-						<option>Select Category</option>
 						{categories.map((cat) => (
 							<option key={cat.title} value={cat.title}>
 								{cat.title}

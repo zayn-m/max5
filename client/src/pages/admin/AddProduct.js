@@ -4,6 +4,7 @@ import { firestore, storage, addCategory, addNewProd, updateProductDoc } from '.
 import PlaceholderImg from '../../assets/images/placeholder.png';
 import slugify from 'react-slugify';
 import Spinner from '../../components/Spinner/Spinner';
+import ImageUploader from 'react-images-upload';
 
 const uuidv1 = require('uuid/v1');
 
@@ -12,6 +13,8 @@ class AddProduct extends React.Component {
 		loading: false,
 		categories: [],
 		subCategories: [],
+		variations: [],
+		editCategory: '',
 		category: '',
 		subCategory: '',
 		title: '',
@@ -28,11 +31,12 @@ class AddProduct extends React.Component {
 
 	componentDidMount() {
 		if (this.props.location.state) {
-			const { name, description, price } = this.props.location.state;
+			const { name, description, price, title } = this.props.location.state;
 			this.setState({
 				title: name,
 				description,
-				price
+				price,
+				editCategory: title
 			});
 		}
 		const collectionRef = firestore.collection('products');
@@ -72,6 +76,12 @@ class AddProduct extends React.Component {
 		}
 	};
 
+	onDrop = (picture) => {
+		this.setState({
+			variations: this.state.variations.concat(picture)
+		});
+	};
+
 	addNewCategory = (e) => {
 		e.preventDefault();
 		const { selectedCat, subCategory } = this.state;
@@ -83,12 +93,13 @@ class AddProduct extends React.Component {
 	addProduct = (e) => {
 		e.preventDefault();
 		const btnOp = e.target.value;
-		//Validate form
-		// if (!this.validateForm()) return;
+		// Validate form
+		if (!this.validateForm()) return;
 
 		this.setState({ loading: true });
 
-		const { image, selectedCat, selectedSubCat } = this.state;
+		const { image, selectedCat, selectedSubCat, variations } = this.state;
+		const variationsImages = [];
 
 		if (image === '') {
 			const selectedEditItem = this.props.location.state;
@@ -118,25 +129,54 @@ class AddProduct extends React.Component {
 				},
 				() => {
 					storage.ref(`images/${path}`).child(image.name).getDownloadURL().then((url) => {
-						this.setState({ imageDownloadUrl: url });
+						// Uploading product @variations images
+						const imageUrl = url;
+						if (variations) {
+							variations.forEach((variation) => {
+								const path = uuidv1();
+								storage.ref(`images/${path}/${variation.name}`).put(variation).on(
+									'state_changed',
+									(snapshot) => {
+										const progress = Math.round(
+											snapshot.bytesTransferred / snapshot.totalBytes * 100
+										);
+									},
+									(err) => {
+										console.log(err);
+									},
+									() => {
+										storage
+											.ref(`images/${path}`)
+											.child(variation.name)
+											.getDownloadURL()
+											.then((url) => {
+												variationsImages.push(url);
 
-						const item = {
-							id: Math.random(),
-							routeName: selectedSubCat ? slugify(selectedSubCat) : slugify(selectedCat),
-							category: selectedSubCat ? selectedSubCat : selectedCat,
-							name: this.state.title,
-							description: this.state.description,
-							price: this.state.price,
-							imageUrl: url.toString()
-						};
+												if (variations.length === variationsImages.length) {
+													const item = {
+														id: Math.random(),
+														routeName: selectedSubCat
+															? slugify(selectedSubCat)
+															: slugify(selectedCat),
+														category: selectedSubCat ? selectedSubCat : selectedCat,
+														name: this.state.title,
+														description: this.state.description,
+														price: this.state.price,
+														imageUrl: imageUrl.toString(),
+														variations: variationsImages
+													};
 
-						if (btnOp === 'Update') {
-							updateProductDoc(selectedCat, item).then(() => {
-								console.log('updated');
-							});
-						} else {
-							addNewProd(selectedCat, selectedSubCat, item).then(() => {
-								this.resetForm();
+													if (btnOp === 'Update') {
+														updateProductDoc(selectedCat, item).then(() => {});
+													} else {
+														addNewProd(selectedCat, selectedSubCat, item).then(() => {
+															this.resetForm();
+														});
+													}
+												}
+											});
+									}
+								);
 							});
 						}
 					});
@@ -148,7 +188,7 @@ class AddProduct extends React.Component {
 	validateForm = () => {
 		const { title, selectedCat, selectedSubCat, description, price, image } = this.state;
 
-		if (title && selectedCat && selectedSubCat && description && price && image) {
+		if (title && selectedCat && description && price && image) {
 			return true;
 		}
 
@@ -160,6 +200,7 @@ class AddProduct extends React.Component {
 			loading: false,
 			categories: [],
 			subCategories: [],
+			variations: [],
 			category: '',
 			subCategory: '',
 			title: '',
@@ -173,24 +214,14 @@ class AddProduct extends React.Component {
 	};
 
 	render() {
-		const { title, description, price, loading } = this.state;
+		const { title, description, price, loading, editCategory, selectedCat } = this.state;
 		const selectedEditItem = this.props.location.state;
 
 		return (
 			<section>
 				<div className="row no-gutters">
 					<div className="col-12 col-md-9">
-						<h1 className="col-12 text-left m-3">
-							New Product{' '}
-							<button
-								className="btn btn-danger float-right mr-5"
-								disabled={loading}
-								onClick={this.addProduct}
-								value={selectedEditItem ? 'Update' : 'Submit'}
-							>
-								{selectedEditItem ? 'Update' : 'Submit'}
-							</button>
-						</h1>
+						<h1 className="col-12 text-left m-3">New Product </h1>
 
 						<div className="row col-12">
 							<div className="col-md-6">
@@ -202,7 +233,11 @@ class AddProduct extends React.Component {
 									placeholder="Title"
 									onChange={this.handleInputChange}
 								/>
-								<select className="form-control" onChange={this.handleSelectCat}>
+								<select
+									className={`form-control ${!selectedCat && 'border-danger'}`}
+									defaultValue="Apparel"
+									onChange={this.handleSelectCat}
+								>
 									<option>Select Category</option>
 									{this.state.categories.map((cat) => (
 										<option key={cat.title} value={cat.title}>
@@ -225,7 +260,7 @@ class AddProduct extends React.Component {
 									className="bg-transparent border"
 									name="description"
 									value={description}
-									rows={12}
+									rows={8}
 									placeholder="Description"
 									onChange={this.handleInputChange}
 								/>
@@ -258,6 +293,23 @@ class AddProduct extends React.Component {
 										Choose image...
 									</label>
 								</div>
+								<ImageUploader
+									withPreview={true}
+									withIcon={true}
+									buttonText="Choose variations"
+									label="Max file size: 2mb, accepted: png"
+									onChange={this.onDrop}
+									imgExtension={[ '.png' ]}
+									maxFileSize={5242880}
+								/>
+								<button
+									className="btn btn-danger float-right mt-5 mb-2"
+									disabled={loading}
+									onClick={this.addProduct}
+									value={selectedEditItem ? 'Update' : 'Submit'}
+								>
+									{selectedEditItem ? 'Update' : 'Submit'}
+								</button>
 							</div>
 						</div>
 					</div>

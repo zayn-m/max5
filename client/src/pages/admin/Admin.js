@@ -6,8 +6,11 @@ import {
 	addCategory,
 	addNewProd,
 	getProducts,
-	removeProductItem
+	removeProductItem,
+	getAdminProducts
 } from '../../firebase/firebaseUtils';
+import { confirmAlert } from 'react-confirm-alert'; // Import
+import 'react-confirm-alert/src/react-confirm-alert.css'; // Import css
 import Dashboard from './Dashboard';
 import AddProduct from './AddProduct';
 import Products from './Products';
@@ -16,7 +19,7 @@ class Admin extends React.Component {
 	state = {
 		categories: [],
 		products: [],
-		selectedCat: ''
+		selectedCat: 'apparel'
 	};
 
 	unsubscribe = null;
@@ -29,7 +32,28 @@ class Admin extends React.Component {
 			s.docs.map((d) => categoryCollections.push(d.data()));
 			this.setState({ categories: categoryCollections });
 		});
+		this.getAdminProducts();
 	}
+
+	getAdminProducts = async () => {
+		const items = [];
+		await firestore.collection('products').doc('apparel').get().then((doc) => {
+			doc.data().items.forEach((i) => {
+				items.push(i);
+			});
+
+			this.setState({ products: doc.data() });
+		});
+		// await firestore.collection('products').get().then((querySnapshot) => {
+		// 	querySnapshot.forEach((doc) => {
+		// 		doc.data().items.forEach((i) => {
+		// 			items.push(i);
+		// 		});
+		// 	});
+
+		// 	this.setState({ products: items });
+		// });
+	};
 
 	componentWillUnmount() {
 		this.unsubscribe = null;
@@ -49,13 +73,27 @@ class Admin extends React.Component {
 	};
 
 	removeItem = async (doc, item, index) => {
-		removeProductItem(doc, item).then(() => {
-			this.state.products.items.splice(index, 1);
+		confirmAlert({
+			title: 'Delete Data',
+			message: 'This will permanently delete this data.',
+			buttons: [
+				{
+					label: 'Yes',
+					onClick: () =>
+						removeProductItem(doc, item).then(() => {
+							this.state.products.items.splice(index, 1);
+						})
+				},
+				{
+					label: 'No'
+				}
+			]
 		});
 	};
 
 	render() {
 		const { products, categories, selectedCat } = this.state;
+
 		return (
 			<div className="container-fluid border p-0">
 				<div className="row no-gutters">
@@ -72,10 +110,10 @@ class Admin extends React.Component {
 								</table>
 								<div className="list-group" id="list-tab" role="tablist">
 									<Link to="/admin/products" className="list-group-item list-group-item-action">
-										Products
+										Manage
 									</Link>
 									<Link to="/admin/add-product" className="list-group-item list-group-item-action">
-										Manage
+										Add Product
 									</Link>
 								</div>
 							</div>

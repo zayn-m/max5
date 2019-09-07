@@ -111,11 +111,11 @@ class Navbar extends React.Component {
 							</li>
 						</ul>
 						<ul className="navbar-nav ml-auto">
-							<li className={`nav-item ${match.path === '/contact-us' ? 'active' : ''}`}>
+							{/* <li className={`nav-item ${match.path === '/contact-us' ? 'active' : ''}`}>
 								<Link to="/contact-us" className="nav-link">
 									Contact Us
 								</Link>
-							</li>
+							</li> */}
 
 							<li className={`nav-item dropdown  ${match.path === '/account' ? 'active' : ''}`}>
 								{!currentUser ? (

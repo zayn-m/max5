@@ -189,6 +189,19 @@ export const getProducts = async (title, subTitle, startAt, itemsPerPage) => {
 	}
 };
 
+export const getAdminProducts = async () => {
+	const items = [];
+	await firestore.collection('products').get().then((querySnapshot) => {
+		querySnapshot.forEach((doc) => {
+			doc.data().items.forEach((i) => {
+				items.push(i);
+			});
+		});
+
+		return items;
+	});
+};
+
 export const getProductByCategory = async (category, productId) => {
 	const productRef = firestore.collection('products').doc(category);
 	const snapshot = await productRef.get();

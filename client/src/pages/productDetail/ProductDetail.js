@@ -10,20 +10,25 @@ import Card from '../../components/Card/Card';
 import Skelton from '../../components/Skelton/Skelton';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Variations from '../../components/Variations/Variations';
 
 class ProductDetail extends React.Component {
 	state = {
 		product: null,
 		loaded: false,
 		recommendations: [],
-		qty: 1
+		qty: 1,
+		startingImage: '',
+		displayImage: ''
 	};
 
 	componentDidMount() {
 		const category = this.props.match.params.category;
 		const id = this.props.match.params.productId;
 
-		getProductByCategory(category, id).then((res) => this.setState({ product: res }));
+		getProductByCategory(category, id).then((res) =>
+			this.setState({ product: res, displayImage: res.imageUrl, startingImage: res.imageUrl })
+		);
 		this.recommendations();
 	}
 
@@ -42,7 +47,7 @@ class ProductDetail extends React.Component {
 	};
 
 	render() {
-		const { product, loaded, qty } = this.state;
+		const { product, loaded, qty, displayImage, startingImage } = this.state;
 
 		return (
 			<div className="container">
@@ -58,7 +63,7 @@ class ProductDetail extends React.Component {
 						<section className="row product-detail">
 							<div className="col-md-6">
 								<h1>{product.name}</h1>
-								<p>{product.description}</p>
+								<p className="text-justify">{product.description}</p>
 								<h2>
 									<strong>${product.price}</strong>
 								</h2>
@@ -89,7 +94,14 @@ class ProductDetail extends React.Component {
 								</button>
 							</div>
 							<div className="col-md-6">
-								<img src={product.imageUrl} className="img-fluid" alt={product.name} />
+								<img src={displayImage} style={{ height: '40rem' }} alt={product.name} />
+
+								<Variations
+									startingImage={startingImage}
+									variations={product.variations}
+									displayStartingImage={() => this.setState({ displayImage: startingImage })}
+									changeDisplayImage={(image) => this.setState({ displayImage: image })}
+								/>
 							</div>
 						</section>
 

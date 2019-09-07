@@ -76,6 +76,7 @@ class Shop extends React.Component {
 
 	render() {
 		let content = null;
+
 		if (this.state.products) {
 			content = this.state.products.items.map((item, i) => {
 				if (i % 2) {
@@ -178,16 +179,18 @@ class Shop extends React.Component {
 					<div className="items-container container-fluid mb-5">{content}</div>
 				)}
 
-				<Pagination
-					innerClass="pagination justify-content-center"
-					itemClass="page-item"
-					linkClass="page-link"
-					activePage={this.state.currentPage}
-					itemsCountPerPage={this.state.itemsPerPage}
-					totalItemsCount={this.state.totalItemsCount || 0}
-					pageRangeDisplayed={5}
-					onChange={this.handlePageChange}
-				/>
+				{this.state.totalItemsCount > 8 ? (
+					<Pagination
+						innerClass="pagination justify-content-center"
+						itemClass="page-item"
+						linkClass="page-link"
+						activePage={this.state.currentPage}
+						itemsCountPerPage={this.state.itemsPerPage}
+						totalItemsCount={this.state.totalItemsCount || 0}
+						pageRangeDisplayed={5}
+						onChange={this.handlePageChange}
+					/>
+				) : null}
 			</div>
 		);
 	}
