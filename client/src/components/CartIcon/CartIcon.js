@@ -7,7 +7,7 @@ import './CartIcon.css';
 
 const cartIcon = ({ toggleCartHidden, items }) => {
 	return (
-		<i className="fas fa-shopping-cart" onClick={toggleCartHidden}>
+		<i className="fas fa-shopping-cart" style={{ cursor: 'pointer' }} onClick={toggleCartHidden}>
 			{' '}
 			{items > 0 && <span className="badge badge-danger">{items}</span>}
 		</i>

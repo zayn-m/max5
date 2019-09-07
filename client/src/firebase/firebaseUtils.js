@@ -3,6 +3,7 @@ import 'firebase/app';
 import 'firebase/auth';
 import 'firebase/storage';
 import 'firebase/firestore';
+import slugify from 'react-slugify';
 
 const config = {
 	apiKey: 'AIzaSyCy3hO_tmquDO0xpDsoejm39bCZNZE1FS0',
@@ -83,12 +84,87 @@ export const createOrder = async (userAuth, order, items) => {
 	}
 };
 
-export const getProducts = async (title, startAt, itemsPerPage) => {
-	const productRef = firestore.collection('products').doc(title);
+export const addCategory = (category, subCategory) => {
+	if (category) {
+		try {
+			const productRef = firestore.collection('products').doc(slugify(category));
+			productRef.get().then((doc) => {
+				if (!doc.exists) {
+					productRef.set({
+						title: category,
+						subTitles: subCategory ? [ subCategory.toLowerCase() ] : [],
+						items: []
+					});
+				} else {
+					productRef.update({
+						subTitles: [ ...doc.data().subTitles, subCategory ]
+					});
+				}
+			});
+		} catch (e) {
+			console.log('Error when adding category', e.message);
+		}
+	}
+};
 
+export const addNewProd = async (collectionKey, subTitle, objectsToAdd) => {
+	let items = [];
+	const itemRef = firestore.collection('products').doc(slugify(collectionKey));
+	itemRef.get().then((doc) => {
+		if (doc.exists) {
+			const d = doc.data();
+			items = d.items;
+			itemRef.update({ items: [ ...items, objectsToAdd ] });
+		} else {
+			itemRef.set({
+				title: collectionKey,
+				routeName: slugify(collectionKey),
+				subTitles: [ ...doc.data().subTitles, subTitle ],
+				items: [ objectsToAdd ]
+			});
+		}
+	});
+};
+
+export const getProducts = async (title, subTitle, startAt, itemsPerPage) => {
+	const productRef = firestore.collection('products').doc(slugify(title));
 	const snapshot = await productRef.get();
+
+	// Check if sub category exists
+	if (subTitle) {
+		if (snapshot.exists) {
+			let data = [];
+
+			const totalItemsCount = snapshot.data().items.filter((i) => i.routeName === slugify(subTitle)).length;
+			for (let i = startAt; i < itemsPerPage + startAt; i++) {
+				if (!snapshot.data().items[i]) {
+					break;
+				} else {
+					if (snapshot.data().items[i].routeName === slugify(subTitle)) {
+						data.push(snapshot.data().items[i]);
+					}
+				}
+			}
+			let finalData;
+
+			if (data.length) {
+				finalData = {
+					title: snapshot.data().title,
+					routeName: snapshot.data().routeName,
+					items: [ ...data ],
+					totalItemsCount
+				};
+			} else {
+				finalData = null;
+			}
+
+			return finalData;
+		}
+	}
 	if (snapshot.exists) {
 		let data = [];
+		const totalItemsCount = snapshot.data().items.length;
+
 		for (let i = startAt; i < itemsPerPage + startAt; i++) {
 			if (!snapshot.data().items[i]) {
 				break;
@@ -99,7 +175,12 @@ export const getProducts = async (title, startAt, itemsPerPage) => {
 		let finalData;
 
 		if (data.length) {
-			finalData = { title: snapshot.data().title, items: [ ...data ] };
+			finalData = {
+				title: snapshot.data().title,
+				routeName: snapshot.data().routeName,
+				items: [ ...data ],
+				totalItemsCount
+			};
 		} else {
 			finalData = null;
 		}
@@ -113,7 +194,8 @@ export const getProductByCategory = async (category, productId) => {
 	const snapshot = await productRef.get();
 
 	if (snapshot.exists) {
-		const p = snapshot.data().items.filter((p) => p.id === productId);
+		const p = snapshot.data().items.filter((p) => +p.id === +productId);
+
 		if (p) {
 			return { category: category, ...p[0] };
 		}
@@ -123,8 +205,10 @@ export const getProductByCategory = async (category, productId) => {
 export const getRecommendations = async () => {
 	const snapshot = await firestore.collection('products').get();
 	const categories = snapshot.docs.map((doc) => doc.id);
+
 	const randomElement = Math.floor(Math.random() * categories.length);
-	return getProducts(categories[randomElement], 0, 8);
+
+	return getProducts(categories[randomElement], null, 0, 8);
 };
 
 export const getUserOrders = async (userAuth) => {
@@ -158,6 +242,59 @@ export const getUserOrders = async (userAuth) => {
 	if (orders) {
 		return orders;
 	}
+};
+
+export const updateProductDoc = async (title, itemToUpdate) => {
+	const productRef = firestore.collection('products').doc(slugify(title));
+	const snapshot = await productRef.get();
+
+	if (snapshot.exists) {
+		const items = snapshot.data().items;
+
+		for (let i = 0; i < items.length; i++) {
+			if (items[i].id == itemToUpdate.id) {
+				items[i] = itemToUpdate;
+			}
+		}
+
+		productRef.update({
+			items: items
+		});
+	}
+};
+
+export const removeProductItem = async (title, itemToDelete) => {
+	const productRef = firestore.collection('products').doc(slugify(title));
+	const snapshot = await productRef.get();
+
+	if (snapshot.exists) {
+		const items = snapshot.data().items;
+
+		for (let i = 0; i < items.length; i++) {
+			if (items[i].id == itemToDelete.id) {
+				items.splice(i, 1);
+			}
+		}
+
+		productRef.update({
+			items: items
+		});
+	}
+};
+
+export const convertCollections = (collections) => {
+	const transformedCollection = collections.docs.map((doc) => {
+		const { title, items, subTitle } = doc.data();
+		return {
+			title,
+			subTitle,
+			items
+		};
+	});
+	return transformedCollection.reduce((accumulator, collection) => {
+		accumulator[collection.title.toLowerCase()] = collection;
+		return accumulator;
+	}, {});
 };
 
 const provider = new firebase.auth.GoogleAuthProvider();

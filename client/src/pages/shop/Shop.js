@@ -22,7 +22,7 @@ class Shop extends React.Component {
 		products: null,
 		currentPage: 1,
 		itemsPerPage: 8,
-		totalItemCount: 20,
+		totalItemsCount: 0,
 		activePage: 1
 	};
 
@@ -32,7 +32,10 @@ class Shop extends React.Component {
 		if (isDifferentPage) this._isMounted && this.fetchData();
 
 		// Checking if url params are different
-		if (prevProps.match.params.category !== this.props.match.params.category) {
+		if (
+			prevProps.match.params.category !== this.props.match.params.category ||
+			prevProps.match.params.subCategory !== this.props.match.params.subCategory
+		) {
 			this._isMounted && this.fetchData();
 		}
 	}
@@ -52,15 +55,17 @@ class Shop extends React.Component {
 	fetchData = async () => {
 		let data;
 		const { currentPage, itemsPerPage } = this.state;
+		const { category, subCategory } = this.props.match.params;
 		const startAt = currentPage * itemsPerPage - itemsPerPage;
 
-		if (this.props.match.params.category) {
-			data = await getProducts(this.props.match.params.category, startAt, itemsPerPage);
+		if (category) {
+			data = await getProducts(category, subCategory, startAt, itemsPerPage);
 		} else {
 			data = await getProducts('boxing', startAt, itemsPerPage);
 		}
 
-		this._isMounted && this.setState({ loading: false, products: data });
+		this._isMounted &&
+			this.setState({ loading: false, products: data, totalItemsCount: data ? data.totalItemsCount : 0 });
 	};
 
 	selectProductHandler = (product, category) => {
@@ -71,7 +76,6 @@ class Shop extends React.Component {
 
 	render() {
 		let content = null;
-
 		if (this.state.products) {
 			content = this.state.products.items.map((item, i) => {
 				if (i % 2) {
@@ -79,16 +83,19 @@ class Shop extends React.Component {
 						<div className="box-container" key={item.id}>
 							<Fade right>
 								<div className="row">
-									<div
-										className="col-12 col-md-7 mr-auto "
-										style={{ zIndex: '10' }}
-										onClick={() => this.selectProductHandler(item, this.state.products.title)}
-									>
+									<div className="col-12 col-md-7 mr-auto " style={{ zIndex: '10' }}>
 										<h1 className="text-left product-title">{item.name}</h1>
 										<p>{item.description.substring(0, 200)}...</p>
 										<h4>
 											<strong>${item.price}</strong>
 										</h4>
+										<button
+											className="btn btn-danger border mt-3"
+											onClick={() =>
+												this.selectProductHandler(item, this.state.products.routeName)}
+										>
+											View
+										</button>
 									</div>
 									<div className="col-12 col-md-5">
 										<div
@@ -127,15 +134,19 @@ class Shop extends React.Component {
 											/>
 										</div>
 									</div>
-									<div
-										className="col-12 col-md-5 "
-										onClick={() => this.selectProductHandler(item, this.state.products.title)}
-									>
+									<div className="col-12 col-md-5 ">
 										<h1 className="text-left product-title">{item.name}</h1>
 										<p>{item.description.substring(0, 200)}...</p>
 										<h4>
 											<strong>${item.price}</strong>
 										</h4>
+										<button
+											className="btn btn-danger mt-3"
+											onClick={() =>
+												this.selectProductHandler(item, this.state.products.routeName)}
+										>
+											View
+										</button>
 									</div>
 								</div>
 							</Fade>
@@ -172,8 +183,8 @@ class Shop extends React.Component {
 					itemClass="page-item"
 					linkClass="page-link"
 					activePage={this.state.currentPage}
-					itemsCountPerPage={10}
-					totalItemsCount={450}
+					itemsCountPerPage={this.state.itemsPerPage}
+					totalItemsCount={this.state.totalItemsCount || 0}
 					pageRangeDisplayed={5}
 					onChange={this.handlePageChange}
 				/>

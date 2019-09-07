@@ -16,12 +16,13 @@ class ProductDetail extends React.Component {
 		product: null,
 		loaded: false,
 		recommendations: [],
-		qty: 0
+		qty: 1
 	};
 
 	componentDidMount() {
 		const category = this.props.match.params.category;
 		const id = this.props.match.params.productId;
+
 		getProductByCategory(category, id).then((res) => this.setState({ product: res }));
 		this.recommendations();
 	}
@@ -42,6 +43,7 @@ class ProductDetail extends React.Component {
 
 	render() {
 		const { product, loaded, qty } = this.state;
+
 		return (
 			<div className="container">
 				{!loaded ? (
@@ -53,7 +55,7 @@ class ProductDetail extends React.Component {
 							hideProgressBar={true}
 							style={{ fontWeight: 'bold', color: '#000' }}
 						/>
-						<section className="row border-bottom product-detail">
+						<section className="row product-detail">
 							<div className="col-md-6">
 								<h1>{product.name}</h1>
 								<p>{product.description}</p>
@@ -99,7 +101,7 @@ class ProductDetail extends React.Component {
 										key={item.id}
 										item={item}
 										clicked={() =>
-											this.selectItemHandler(this.state.recommendations.title, item.id)}
+											this.selectItemHandler(this.state.recommendations.routeName, item.id)}
 									/>
 								))}
 							</div>
