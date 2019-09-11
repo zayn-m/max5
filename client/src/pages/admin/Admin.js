@@ -109,23 +109,35 @@ class Admin extends React.Component {
 									</thead>
 								</table>
 								<div className="list-group" id="list-tab" role="tablist">
-									<Link to="/admin/products" className="list-group-item list-group-item-action">
-										Manage
+									<Link
+										to="/admin/dashboard/products"
+										className="list-group-item list-group-item-action"
+									>
+										<i className="fas fa-list" /> Manage
 									</Link>
-									<Link to="/admin/add-product" className="list-group-item list-group-item-action">
-										Add Product
+									<Link
+										to="/admin/dashboard/add-product"
+										className="list-group-item list-group-item-action"
+									>
+										<i className="fas fa-plus" /> Add Product
 									</Link>
 								</div>
 							</div>
 						</div>
 					</div>
 					<div className="col-12 col-md-10">
+						<header
+							className="col-12 d-none d-sm-block"
+							style={{ backgroundColor: '#E9ECEF', height: '51px' }}
+						>
+							<i className="fas fa-user mt-3" />
+						</header>
 						<Switch>
-							<Route path="/admin/dashboard" component={Dashboard} />
-							<Route path="/admin/add-product" component={AddProduct} />
-							<Route path="/admin/edit-product" component={AddProduct} />
+							{/* <Route path="/admin/dashboard" component={Dashboard} /> */}
+							<Route path="/admin/dashboard/add-product" component={AddProduct} />
+							<Route path="/admin/dashboard/edit-product" component={AddProduct} />
 							<Route
-								path="/admin/products"
+								path="/admin/dashboard/products"
 								render={() => (
 									<Products
 										categories={categories}
@@ -136,7 +148,6 @@ class Admin extends React.Component {
 									/>
 								)}
 							/>
-							<Redirect to="/admin" />
 						</Switch>
 					</div>
 					<div className="col-md-1" />

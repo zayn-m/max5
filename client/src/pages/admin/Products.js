@@ -43,7 +43,7 @@ const products = ({ categories, selectedCat, products, handleChange, removeItem 
 											<li className="list-group-item border-0 col-2">
 												<Link
 													to={{
-														pathname: '/admin/edit-product',
+														pathname: '/admin/dashboard/edit-product',
 														state: { edit: true, title: selectedCat, ...p }
 													}}
 												>

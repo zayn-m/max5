@@ -33,7 +33,6 @@ class SignIn extends React.Component {
 			});
 		} catch (e) {
 			this.setState({ error: true, disabled: false });
-			console.log(e.message);
 		}
 	};
 

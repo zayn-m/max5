@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 
 import './App.css';
-import { Switch, Route, Redirect } from 'react-router-dom';
+import { Switch, Route, Redirect, withRouter } from 'react-router-dom';
 import { auth, firestore, createUserProfileDocument, createUserCart } from './firebase/firebaseUtils';
 import { connect } from 'react-redux';
 import { setCurrentUser } from './store/actions/user';
@@ -16,6 +16,7 @@ import Checkout from './pages/checkout/Checkout';
 import ProductDetail from './pages/productDetail/ProductDetail';
 import PurchaseHistory from './pages/purchaseHistory/PurchaseHistory';
 import Admin from './pages/admin/Admin';
+import Auth from './pages/admin/Auth';
 
 class App extends Component {
 	state = {
@@ -56,26 +57,35 @@ class App extends Component {
 	}
 
 	render() {
+		const adminRoutes = this.props.location.pathname.includes('/admin');
 		return (
 			<div className="container-fluid p-0">
-				<Navbar match={this.props} categories={this.state.categories} />
-				<Switch>
-					<Route exact path="/" component={Home} />
-					<Route path="/admin" component={Admin} />
-					<Route path="/checkout" component={Checkout} />
-					<Route exact path="/shop" component={Shop} />
-					<Route path="/shop/:category/:productId" component={ProductDetail} />
-					<Route
-						path="/account"
-						render={() => (this.props.currentUser ? <Redirect to="/" /> : <Account />)}
-					/>
-					<Route
-						path="/user/purchase-history"
-						render={() => (!this.props.currentUser ? <Redirect to="/" /> : <PurchaseHistory />)}
-					/>
-					<Route path="/:category/:subCategory" component={Shop} />
-					<Route path="/:category" component={Shop} />
-				</Switch>
+				{adminRoutes ? (
+					<Switch>
+						<Route path="/admin/dashboard" component={Admin} />
+						<Route exact path="/admin" component={Auth} />
+					</Switch>
+				) : (
+					<div>
+						<Navbar match={this.props} categories={this.state.categories} />
+						<Switch>
+							<Route exact path="/" component={Home} />
+							<Route path="/checkout" component={Checkout} />
+							<Route exact path="/shop" component={Shop} />
+							<Route path="/shop/:category/:productId" component={ProductDetail} />
+							<Route
+								path="/account"
+								render={() => (this.props.currentUser ? <Redirect to="/" /> : <Account />)}
+							/>
+							<Route
+								path="/user/purchase-history"
+								render={() => (!this.props.currentUser ? <Redirect to="/" /> : <PurchaseHistory />)}
+							/>
+							<Route path="/:category/:subCategory" component={Shop} />
+							<Route path="/:category" component={Shop} />
+						</Switch>
+					</div>
+				)}
 			</div>
 		);
 	}
@@ -94,4 +104,4 @@ const mapDispatchToProps = (dispatch) => {
 	};
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(App);
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(App));

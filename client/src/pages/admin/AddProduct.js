@@ -94,7 +94,7 @@ class AddProduct extends React.Component {
 		e.preventDefault();
 		const btnOp = e.target.value;
 		// Validate form
-		if (!this.validateForm()) return;
+		// if (!this.validateForm()) return;
 
 		this.setState({ loading: true });
 
@@ -221,7 +221,9 @@ class AddProduct extends React.Component {
 			<section>
 				<div className="row no-gutters">
 					<div className="col-12 col-md-9">
-						<h1 className="col-12 text-left m-3">New Product </h1>
+						<h1 className="col-12 text-left m-3">
+							{selectedEditItem ? ' Update Product ' : 'New Product'}{' '}
+						</h1>
 
 						<div className="row col-12">
 							<div className="col-md-6">
@@ -233,11 +235,7 @@ class AddProduct extends React.Component {
 									placeholder="Title"
 									onChange={this.handleInputChange}
 								/>
-								<select
-									className={`form-control ${!selectedCat && 'border-danger'}`}
-									defaultValue="Apparel"
-									onChange={this.handleSelectCat}
-								>
+								<select className={'form-control'} onChange={this.handleSelectCat}>
 									<option>Select Category</option>
 									{this.state.categories.map((cat) => (
 										<option key={cat.title} value={cat.title}>
