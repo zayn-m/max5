@@ -6,7 +6,7 @@ import { createStructuredSelector } from 'reselect';
 import { selectCartHidden } from '../../store/selectors/cart';
 import { selectCurrentUser } from '../../store/selectors/user';
 
-import Logo from '../../assets/images/logo.png';
+import Logo from '../Logo/Logo';
 import CartIcon from '../CartIcon/CartIcon';
 import CartDropdown from '../CartDropdown/CartDropdown';
 import slugify from 'react-slugify';
@@ -45,9 +45,7 @@ class Navbar extends React.Component {
 					>
 						<span className="navbar-toggler-icon" />
 					</button>
-					<Link to="/" className="navbar-brand ">
-						<img src={Logo} width="100" height="30" alt="brand" />
-					</Link>
+					<Logo path="/" />
 
 					<div className="navbar-item text-dark d-block d-md-none d-lg-none ">
 						<CartIcon />

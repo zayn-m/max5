@@ -3,7 +3,6 @@ import { firestore, storage, addCategory, addNewProd, updateProductDoc } from '.
 
 import PlaceholderImg from '../../assets/images/placeholder.png';
 import slugify from 'react-slugify';
-import Spinner from '../../components/Spinner/Spinner';
 import ImageUploader from 'react-images-upload';
 
 const uuidv1 = require('uuid/v1');
@@ -122,7 +121,7 @@ class AddProduct extends React.Component {
 				'state_changed',
 				(snapshot) => {
 					// Progress function
-					const progress = Math.round(snapshot.bytesTransferred / snapshot.totalBytes * 100);
+					// const progress = Math.round(snapshot.bytesTransferred / snapshot.totalBytes * 100);
 				},
 				(err) => {
 					console.log(err);
@@ -137,9 +136,9 @@ class AddProduct extends React.Component {
 								storage.ref(`images/${path}/${variation.name}`).put(variation).on(
 									'state_changed',
 									(snapshot) => {
-										const progress = Math.round(
-											snapshot.bytesTransferred / snapshot.totalBytes * 100
-										);
+										// const progress = Math.round(
+										// 	snapshot.bytesTransferred / snapshot.totalBytes * 100
+										// );
 									},
 									(err) => {
 										console.log(err);
@@ -236,7 +235,7 @@ class AddProduct extends React.Component {
 									onChange={this.handleInputChange}
 								/>
 								<select className={'form-control'} onChange={this.handleSelectCat}>
-									<option>Select Category</option>
+									<option>Select Sub Category</option>
 									{this.state.categories.map((cat) => (
 										<option key={cat.title} value={cat.title}>
 											{cat.title}
@@ -323,16 +322,6 @@ class AddProduct extends React.Component {
 										</option>
 									))}
 								</select>
-								{/* <input
-									type="text"
-									value={this.state.category}
-									className="form-control bg-transparent border"
-									id="exampleInputEmail1"
-									aria-describedby="emailHelp"
-									placeholder="Category"
-									required
-									onChange={(e) => this.setState({ category: e.target.value })}
-								/> */}
 								<input
 									type="text"
 									value={this.state.subCategory}

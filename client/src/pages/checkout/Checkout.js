@@ -21,7 +21,7 @@ class Checkout extends React.Component {
 	};
 
 	render() {
-		const { cartItems, total, currentUser } = this.props;
+		const { cartItems, total } = this.props;
 		return (
 			<div className="checkout-page">
 				<ToastContainer autoClose={2000} hideProgressBar={true} style={{ fontWeight: 'bold', color: '#000' }} />

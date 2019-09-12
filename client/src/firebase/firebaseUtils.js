@@ -75,6 +75,7 @@ export const createOrder = async (userAuth, order, items) => {
 
 	try {
 		firestore.collection('orders').add({
+			createdAt: new Date(),
 			customer: userAuth,
 			orderInfo: order,
 			items: items
@@ -227,7 +228,7 @@ export const getRecommendations = async () => {
 export const getUserOrders = async (userAuth) => {
 	if (!userAuth) return { error: 'Not authorized' };
 
-	const snapshot = await firestore.collection('orders').get();
+	const snapshot = await firestore.collection('orders').orderBy('createdAt', 'desc').get();
 	const orders = [];
 	// Get orders based on user id
 	snapshot.docs.filter((doc) => doc.data().customer.id === userAuth.id).forEach((d) => {
@@ -235,7 +236,7 @@ export const getUserOrders = async (userAuth) => {
 		let totalPrice = 0;
 		let purchasedItemsCount = 0;
 		data.items.forEach((i) => {
-			totalPrice += i.price;
+			totalPrice = i.price * i.quantity + totalPrice;
 			purchasedItemsCount += i.quantity;
 		});
 		const order = {
