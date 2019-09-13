@@ -25,7 +25,7 @@ class Auth extends React.Component {
 			const res = await auth.signInWithEmailAndPassword(email, password);
 
 			if (res.user) {
-				this.props.history.replace('/admin/dashboard/orders');
+				this.props.history.replace('/admin/dashboard');
 			}
 		} catch (e) {
 			this.setState({ error: true, disabled: false });
