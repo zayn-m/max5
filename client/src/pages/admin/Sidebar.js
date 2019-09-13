@@ -6,11 +6,14 @@ const sidebar = () => (
 		<table className="table table-light table-hover">
 			<thead className="thead-light">
 				<tr>
-					<th scope="row">Dashboard</th>
+					<th scope="row">Admin Panel</th>
 				</tr>
 			</thead>
 		</table>
 		<div className="list-group" id="list-tab" role="tablist">
+			<Link to="/admin/dashboard" className="list-group-item list-group-item-action">
+				<i className="fas fa-chart-line" /> Dashboard
+			</Link>
 			<Link to="/admin/dashboard/orders" className="list-group-item list-group-item-action">
 				<i className="fas fa-tasks" /> Orders
 			</Link>

@@ -13,16 +13,20 @@ class PurchaseItem extends React.Component {
 	};
 
 	render() {
-		const { order } = this.props;
+		const { order, admin } = this.props;
 		const date = parseInt(order.created);
 		const d = new Date(date);
 		const ds = d.toLocaleString();
 		return (
 			<div className="row mt-3 purchase-history__item border-bottom">
-				<div className="col-12 col-md-4 d-flex">
-					<div className="w-50 text-center">
+				<div className={`col-12 ${admin ? 'col-md-3' : 'col-md-4'}  d-flex`}>
+					<div className="w-50 text-center ">
 						<span className="mx-auto">
-							<i className="fas fa-shopping-cart fa-2x text-danger" />
+							{admin ? (
+								<strong>#{order.orderNo}</strong>
+							) : (
+								<i className="fas fa-shopping-cart fa-2x text-danger" />
+							)}
 						</span>
 					</div>
 					<div className="w-50 ">
@@ -53,13 +57,18 @@ class PurchaseItem extends React.Component {
 						</small>
 					</div>
 				</div>
-				<div className="col-md-2">
+				{admin && (
+					<div className="col-md-2">
+						<span>{order.email}</span>
+					</div>
+				)}
+				<div className="col-md-2 ">
 					<span>{order.address}</span>
 				</div>
 				<div className="col-md-2">
 					<span>{ds}</span>
 				</div>
-				<div className="col-md-2">
+				<div className={`${admin ? 'col-md-1' : 'col-md-2'}`}>
 					<strong>${order.totalPrice} </strong>
 				</div>
 				<div className="col-md-2">

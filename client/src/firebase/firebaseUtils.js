@@ -21,6 +21,15 @@ export const auth = firebase.auth();
 export const firestore = firebase.firestore();
 export const storage = firebase.storage();
 
+// Function for generating random order numbers
+function orderNumber() {
+	let now = Date.now().toString(); // '1492341545873'
+	// pad with extra random digit
+	now += now + Math.floor(Math.random() * 10);
+	// format
+	return [ now.slice(2, 6), now.slice(10, 14) ].join('');
+}
+
 export const createUserProfileDocument = async (userAuth, additionalData) => {
 	if (!userAuth) return;
 
@@ -74,12 +83,28 @@ export const createOrder = async (userAuth, order, items) => {
 	if (!userAuth) return { error: 'Unexpected error occurred' };
 
 	try {
-		firestore.collection('orders').add({
-			createdAt: new Date(),
-			customer: userAuth,
-			orderInfo: order,
-			items: items
-		});
+		const timestamp = new Date();
+		firestore
+			.collection('orders')
+			.add({
+				orderNo: orderNumber(),
+				createdAt: timestamp,
+				customer: userAuth,
+				orderInfo: order,
+				items: items
+			})
+			.then(() => {
+				// Calculating total amount
+				let totalPrice = 0;
+				items.forEach((i) => {
+					totalPrice = i.price * i.quantity + totalPrice;
+				});
+
+				firestore.collection('sales').add({
+					createdAt: timestamp.toJSON().slice(0, 10).replace(/-/g, '-'),
+					amount: totalPrice
+				});
+			});
 	} catch (e) {
 		console.log('Error when placing order.', e.message);
 	}
@@ -256,6 +281,63 @@ export const getUserOrders = async (userAuth) => {
 	if (orders) {
 		return orders;
 	}
+};
+
+export const getDashboardData = async () => {
+	const usersSnapshot = await firestore.collection('users').get();
+	const salesSnapshot = await firestore.collection('sales').get();
+
+	let totalRevenue = 0;
+	let totalOrders;
+	let subscribers;
+
+	subscribers = usersSnapshot.docs.length;
+	totalOrders = salesSnapshot.docs.length;
+	salesSnapshot.docs.forEach((doc) => {
+		totalRevenue += doc.data().amount;
+	});
+	return { totalRevenue, totalOrders, subscribers };
+};
+
+export const getChartData = async () => {
+	const start = '2019-01-01';
+	const end = '2019-12-31';
+	const snapshot = await firestore
+		.collection('sales')
+		.where('createdAt', '>', start)
+		.where('createdAt', '<', end)
+		.get();
+
+	const dataset = {
+		'01': 0,
+		'02': 0,
+		'03': 0,
+		'04': 0,
+		'05': 0,
+		'06': 0,
+		'07': 0,
+		'08': 0,
+		'09': 0,
+		'10': 0,
+		'11': 0,
+		'12': 0
+	};
+	const months = [ '01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12' ];
+	const chartDataset = [];
+	snapshot.docs.forEach((doc) => {
+		let date = doc.data().createdAt;
+		for (let month of months) {
+			if (month === date.slice(5, 7)) {
+				dataset[month] += 1;
+			}
+		}
+	});
+
+	// Setting dataset for charts
+	for (var o in dataset) {
+		chartDataset.push(dataset[o]);
+	}
+	return dataset;
 };
 
 export const updateProductDoc = async (title, itemToUpdate) => {

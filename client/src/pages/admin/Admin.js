@@ -3,15 +3,17 @@ import { Route, Switch } from 'react-router-dom';
 import { firestore, getProducts, removeProductItem } from '../../firebase/firebaseUtils';
 import { confirmAlert } from 'react-confirm-alert'; // Import
 import 'react-confirm-alert/src/react-confirm-alert.css'; // Import css
+
 import Sidebar from './Sidebar';
 import Header from './Header';
-
+import Dashboard from './Dashboard';
 import AddProduct from './AddProduct';
 import Products from './Products';
 import Orders from './Orders';
 
 class Admin extends React.Component {
 	state = {
+		filterInput: '',
 		categories: [],
 		products: [],
 		orders: [],
@@ -72,7 +74,9 @@ class Admin extends React.Component {
 				});
 				const order = {
 					orderId: d.id,
+					orderNo: data.orderNo,
 					items: data.items,
+					email: data.orderInfo.email,
 					type: data.orderInfo.type,
 					address: `${data.orderInfo.card.address_line1} ${data.orderInfo.card.address_city} ${data.orderInfo
 						.card.address_country}`,
@@ -97,6 +101,11 @@ class Admin extends React.Component {
 		const { value } = e.target;
 		this.setState({ selectedCat: value });
 		this.fetchProducts(value);
+	};
+
+	handleFilterChange = (e) => {
+		const { name, value } = e.target;
+		this.setState({ [name]: value });
 	};
 
 	fetchProducts = async (value) => {
@@ -125,7 +134,10 @@ class Admin extends React.Component {
 	};
 
 	render() {
-		const { products, categories, selectedCat, orders } = this.state;
+		const { filterInput, products, categories, selectedCat, orders } = this.state;
+		const filteredOrders = orders.filter(
+			(order) => order.orderNo.includes(filterInput) || order.email.includes(filterInput)
+		);
 
 		return (
 			<div className="container-fluid p-0">
@@ -139,8 +151,17 @@ class Admin extends React.Component {
 					<div className="col-12 col-md-10">
 						<Header />
 						<Switch>
-							{/* <Route path="/admin/dashboard" component={Dashboard} /> */}
-							<Route path="/admin/dashboard/orders" render={() => <Orders orders={orders} />} />
+							<Route exact path="/admin/dashboard" component={Dashboard} />
+							<Route
+								path="/admin/dashboard/orders"
+								render={() => (
+									<Orders
+										orders={filteredOrders}
+										filterInput={filterInput}
+										filterOrders={this.handleFilterChange}
+									/>
+								)}
+							/>
 							<Route path="/admin/dashboard/add-product" component={AddProduct} />
 							<Route path="/admin/dashboard/edit-product" component={AddProduct} />
 							<Route
@@ -149,7 +170,7 @@ class Admin extends React.Component {
 									<Products
 										categories={categories}
 										selectedCat={selectedCat}
-										products={products.items}
+										products={products && products.items}
 										handleChange={this.handleSelectCat}
 										removeItem={this.removeItem}
 									/>

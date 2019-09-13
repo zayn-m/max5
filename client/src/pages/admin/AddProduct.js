@@ -4,12 +4,14 @@ import { firestore, storage, addCategory, addNewProd, updateProductDoc } from '.
 import PlaceholderImg from '../../assets/images/placeholder.png';
 import slugify from 'react-slugify';
 import ImageUploader from 'react-images-upload';
+import Variations from '../../components/Variations/Variations';
 
 const uuidv1 = require('uuid/v1');
 
 class AddProduct extends React.Component {
 	state = {
 		loading: false,
+		error: '',
 		categories: [],
 		subCategories: [],
 		variations: [],
@@ -30,12 +32,16 @@ class AddProduct extends React.Component {
 
 	componentDidMount() {
 		if (this.props.location.state) {
-			const { name, description, price, title } = this.props.location.state;
+			const { name, description, price, title, variations, category } = this.props.location.state;
+			this.handleSelectCat(null, title);
 			this.setState({
 				title: name,
 				description,
 				price,
-				editCategory: title
+				variations,
+				editCategory: title,
+				selectedCat: title,
+				selectedSubCat: category
 			});
 		}
 		const collectionRef = firestore.collection('products');
@@ -56,12 +62,16 @@ class AddProduct extends React.Component {
 		this.setState({ [name]: value });
 	};
 
-	handleSelectCat = (e) => {
-		const { value } = e.target;
-		this.setState({ selectedCat: e.target.value });
+	handleSelectCat = (e, title) => {
+		let value;
+		if (e) {
+			value = e.target.value;
+			this.setState({ selectedCat: e.target.value });
+		}
+
 		// Fetch sub categories based on selected category option
 		const collectionRef = firestore.collection('products');
-		this.unsubscribeSubCat = collectionRef.doc(slugify(value)).onSnapshot(async (s) => {
+		this.unsubscribeSubCat = collectionRef.doc(slugify(value ? value : title)).onSnapshot(async (s) => {
 			this.setState({ subCategories: s.data().subTitles });
 		});
 	};
@@ -75,9 +85,42 @@ class AddProduct extends React.Component {
 		}
 	};
 
-	onDrop = (picture) => {
+	imageDimensions = (file) =>
+		new Promise((resolve, reject) => {
+			try {
+				const img = new Image();
+				img.onload = () => {
+					const { naturalWidth: width, naturalHeight: height } = file;
+					console.log(width);
+					resolve({ width, height });
+				};
+				img.onerror = () => {
+					reject('There was some problem during the image loading');
+				};
+				img.src = URL.createObjectURL(file);
+			} catch (error) {
+				reject(error);
+			}
+		});
+
+	getInfo = async (file) => {
+		await this.imageDimensions(file)
+			.then((result) => {
+				console.info(result);
+			})
+			.catch((error) => {
+				console.error(error);
+			});
+	};
+
+	onDrop = async (picture) => {
+		// const { variations } = this.state;
+		// if (variations.length === 3) {
+		// 	alert('Maximum 3 variations are allowed');
+		// 	return;
+		// }
 		this.setState({
-			variations: this.state.variations.concat(picture)
+			variations: picture
 		});
 	};
 
@@ -104,16 +147,20 @@ class AddProduct extends React.Component {
 			const selectedEditItem = this.props.location.state;
 			const item = {
 				id: selectedEditItem.id,
-				routeName: selectedEditItem.routeName,
+				category: selectedSubCat,
+				routeName: slugify(selectedSubCat),
 				imageUrl: selectedEditItem.imageUrl,
-				category: selectedEditItem.category,
 				name: this.state.title,
 				description: this.state.description,
-				price: this.state.price
+				price: this.state.price,
+				variations: variations
 			};
-			updateProductDoc(selectedCat, item).then(() => {
-				this.resetForm();
-			});
+			updateProductDoc(selectedCat, item)
+				.then(() => {
+					this.props.history.replace('/admin/dashboard/add-product');
+					this.resetForm();
+				})
+				.catch((err) => this.setState({ error: err, loading: false }));
 		} else {
 			const path = uuidv1();
 			const uploadtask = storage.ref(`images/${path}/${image.name}`).put(image);
@@ -184,6 +231,10 @@ class AddProduct extends React.Component {
 		}
 	};
 
+	removePicture = (p) => {
+		this.setState({ variations: this.state.variations.filter((v) => v !== p) });
+	};
+
 	validateForm = () => {
 		const { title, selectedCat, selectedSubCat, description, price, image } = this.state;
 
@@ -213,7 +264,7 @@ class AddProduct extends React.Component {
 	};
 
 	render() {
-		const { title, description, price, loading, editCategory, selectedCat } = this.state;
+		const { title, description, price, loading, editCategory, selectedCat, variations } = this.state;
 		const selectedEditItem = this.props.location.state;
 
 		return (
@@ -234,8 +285,13 @@ class AddProduct extends React.Component {
 									placeholder="Title"
 									onChange={this.handleInputChange}
 								/>
-								<select className={'form-control'} onChange={this.handleSelectCat}>
-									<option>Select Sub Category</option>
+								<select
+									className={'form-control'}
+									value={this.state.selectedCat}
+									onChange={this.handleSelectCat}
+								>
+									{!selectedEditItem && <option value="Select Category">Select Category</option>}
+
 									{this.state.categories.map((cat) => (
 										<option key={cat.title} value={cat.title}>
 											{cat.title}
@@ -244,9 +300,12 @@ class AddProduct extends React.Component {
 								</select>
 								<select
 									className="form-control"
+									value={this.state.selectedSubCat}
 									onChange={(e) => this.setState({ selectedSubCat: e.target.value })}
 								>
-									<option>Select Sub Category</option>
+									{!selectedEditItem && (
+										<option value="Select Sub Category">Select Sub Category</option>
+									)}
 									{this.state.subCategories.map((cat) => (
 										<option key={cat} value={cat}>
 											{cat}
@@ -274,7 +333,7 @@ class AddProduct extends React.Component {
 							</div>
 							<div className="col-md-6">
 								<img
-									style={{ width: '100%' }}
+									style={{ width: '100%', height: '400px' }}
 									src={selectedEditItem ? selectedEditItem.imageUrl : this.state.imageUrl}
 									alt="upload"
 								/>
@@ -290,15 +349,34 @@ class AddProduct extends React.Component {
 										Choose image...
 									</label>
 								</div>
-								<ImageUploader
-									withPreview={true}
-									withIcon={true}
-									buttonText="Choose variations"
-									label="Max file size: 2mb, accepted: png"
-									onChange={this.onDrop}
-									imgExtension={[ '.png' ]}
-									maxFileSize={5242880}
-								/>
+								<div className="d-flex bd-highlight justify-content-center mt-3">
+									{selectedEditItem &&
+										this.state.variations.map((v) => (
+											<div className="p-2 bd-highlight bg-light border m-2" key={v}>
+												<img style={{ height: 80, width: 80 }} src={v} alt={v.name} />{' '}
+												<div className="overlay">
+													<i
+														className="fas fa-times-circle"
+														style={{ cursor: 'pointer' }}
+														title="Remove Picture"
+														onClick={() => this.removePicture(v)}
+													/>
+												</div>
+											</div>
+										))}
+								</div>
+								{!selectedEditItem && (
+									<ImageUploader
+										withPreview={true}
+										withIcon={true}
+										buttonText="Choose variations"
+										label="Max file size: 2mb, accepted: png"
+										imgExtension={[ '.png' ]}
+										maxFileSize={2000000}
+										singleImage={true}
+										onChange={this.onDrop}
+									/>
+								)}
 								<button
 									className="btn btn-danger float-right mt-5 mb-2"
 									disabled={loading}

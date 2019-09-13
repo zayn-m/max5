@@ -1,3 +1,3 @@
-const HOST_URL = 'https://max5-app.herokuapp.com';
+const HOST_URL = 'http://localhost:3000';
 
 export { HOST_URL };

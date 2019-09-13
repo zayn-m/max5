@@ -62,11 +62,13 @@ class ProductDetail extends React.Component {
 						/>
 						<section className="row product-detail">
 							<div className="col-md-6">
-								<h1>{product.name}</h1>
-								<p className="text-justify">{product.description}</p>
-								<h2>
-									<strong>${product.price}</strong>
-								</h2>
+								<div style={{ height: '60%' }}>
+									<h1>{product.name}</h1>
+									<p className="text-justify">{product.description}</p>
+									<h2>
+										<strong>${product.price}</strong>
+									</h2>
+								</div>
 								<br />
 								<div className="d-flex flex-row">
 									<button
@@ -94,7 +96,7 @@ class ProductDetail extends React.Component {
 								</button>
 							</div>
 							<div className="col-md-6">
-								<img src={displayImage} style={{ height: '40rem' }} alt={product.name} />
+								<img src={displayImage} style={{ width: '100%', height: '35rem' }} alt={product.name} />
 
 								<Variations
 									startingImage={startingImage}
@@ -108,14 +110,15 @@ class ProductDetail extends React.Component {
 						<section className=" mt-5 mb-5">
 							<h4 className="mb-5">Recommendations for you</h4>
 							<div className="row m-5">
-								{this.state.recommendations.items.map((item) => (
-									<Card
-										key={item.id}
-										item={item}
-										clicked={() =>
-											this.selectItemHandler(this.state.recommendations.routeName, item.id)}
-									/>
-								))}
+								{this.state.recommendations &&
+									this.state.recommendations.items.map((item) => (
+										<Card
+											key={item.id}
+											item={item}
+											clicked={() =>
+												this.selectItemHandler(this.state.recommendations.routeName, item.id)}
+										/>
+									))}
 							</div>
 						</section>
 					</div>
