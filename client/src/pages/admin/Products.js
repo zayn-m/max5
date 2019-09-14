@@ -16,7 +16,48 @@ const products = ({ categories, selectedCat, products, handleChange, removeItem 
 					</select>
 				</h1>
 
-				<div className="admin-products-container">
+				<table className="table table-striped">
+					<thead>
+						<tr>
+							<th scope="col">Name</th>
+							<th scope="col">Category</th>
+							<th scope="col">Sub Category</th>
+							<th scope="col">Description</th>
+							<th scope="col">Price</th>
+							<th scope="col">Actions</th>
+						</tr>
+					</thead>
+					<tbody>
+						{products &&
+							products.map((p, i) => (
+								<tr key={i}>
+									<td>{p.name}</td>
+									<td>{selectedCat.toUpperCase()}</td>
+									<td>{p.category}</td>
+									<td>{p.description.substring(0, 100)}...</td>
+									<td>{p.price}</td>
+									<td>
+										<Link
+											to={{
+												pathname: '/admin/dashboard/edit-product',
+												state: { edit: true, title: selectedCat, ...p }
+											}}
+										>
+											<i className="fas fa-edit" />
+										</Link>
+										&nbsp;&nbsp;&nbsp;
+										<i
+											className="fas fa-trash"
+											style={{ cursor: 'pointer' }}
+											onClick={() => removeItem(selectedCat, p, i)}
+										/>
+									</td>
+								</tr>
+							))}
+					</tbody>
+				</table>
+
+				{/* <div className="admin-products-container">
 					<div className="admin-products-container__item">
 						<ul className="list-group list-group-flush">
 							<li className="list-group-item  bg-light">
@@ -61,7 +102,7 @@ const products = ({ categories, selectedCat, products, handleChange, removeItem 
 								))}
 						</ul>
 					</div>
-				</div>
+				</div> */}
 			</div>
 		</div>
 	);

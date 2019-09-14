@@ -14,23 +14,24 @@ const orders = ({ orders, filterInput, filterOrders }) => {
 					onChange={filterOrders}
 				/>
 			</div>
+
 			<div className="row purchase-history__header border-bottom  bg-light p-3">
 				<div className="col-12 col-md-3">
 					<h3>Orders</h3>
 				</div>
-				<div className="col-md-2">
+				<div className="col-md-2  purchase-history__header--col">
 					<span>Email</span>
 				</div>
-				<div className="col-md-2">
+				<div className="col-md-2 purchase-history__header--col">
 					<span>Address</span>
 				</div>
-				<div className="col-md-2">
+				<div className="col-md-2 purchase-history__header--col">
 					<span>Date</span>
 				</div>
-				<div className="col-md-1">
+				<div className="col-md-1 purchase-history__header--col">
 					<span>Total Price</span>
 				</div>
-				<div className="col-md-2">
+				<div className="col-md-2 purchase-history__header--col">
 					<span>Payment Type</span>
 				</div>
 			</div>

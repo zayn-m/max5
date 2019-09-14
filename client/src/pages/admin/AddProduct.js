@@ -1,9 +1,14 @@
 import React from 'react';
+import { connect } from 'react-redux';
 import { firestore, storage, addCategory, addNewProd, updateProductDoc } from '../../firebase/firebaseUtils';
+import { addVariations } from '../../store/actions/addProduct';
 
 import PlaceholderImg from '../../assets/images/placeholder.png';
 import slugify from 'react-slugify';
 import ImageUploader from 'react-images-upload';
+import ImagesUpload from '../../components/ImagesUpload/ImagesUpload';
+
+import Alert from '../../components/Alert/Alert';
 import Variations from '../../components/Variations/Variations';
 
 const uuidv1 = require('uuid/v1');
@@ -135,32 +140,81 @@ class AddProduct extends React.Component {
 	addProduct = (e) => {
 		e.preventDefault();
 		const btnOp = e.target.value;
-		// Validate form
-		// if (!this.validateForm()) return;
+		const { image, selectedCat, selectedSubCat, variations } = this.state;
+
+		// // Validating form
+		// if (image !== '' && !this.validateForm()) {
+		// 	this.setState({ error: 'Please fill in all the fields!' });
+		// 	return;
+		// }
 
 		this.setState({ loading: true });
 
-		const { image, selectedCat, selectedSubCat, variations } = this.state;
 		const variationsImages = [];
 
 		if (image === '') {
 			const selectedEditItem = this.props.location.state;
-			const item = {
-				id: selectedEditItem.id,
-				category: selectedSubCat,
-				routeName: slugify(selectedSubCat),
-				imageUrl: selectedEditItem.imageUrl,
-				name: this.state.title,
-				description: this.state.description,
-				price: this.state.price,
-				variations: variations
-			};
-			updateProductDoc(selectedCat, item)
-				.then(() => {
-					this.props.history.replace('/admin/dashboard/add-product');
-					this.resetForm();
-				})
-				.catch((err) => this.setState({ error: err, loading: false }));
+			const updateVariations = [];
+			// Uploading variations for selected product
+			this.props.variations.forEach((v) => {
+				if (typeof v === 'object') {
+					// Push to array if image is selected
+					const path = uuidv1();
+					storage.ref(`images/${path}/${v.name}`).put(v).on(
+						'state_changed',
+						() => {},
+						(err) => {
+							console.log(err);
+						},
+						() => {
+							storage.ref(`images/${path}`).child(v.name).getDownloadURL().then((url) => {
+								updateVariations.push(url);
+
+								if (this.props.variations.length === updateVariations.length) {
+									const item = {
+										id: selectedEditItem.id,
+										category: selectedSubCat,
+										routeName: slugify(selectedSubCat),
+										imageUrl: selectedEditItem.imageUrl,
+										name: this.state.title,
+										description: this.state.description,
+										price: this.state.price,
+										variations: updateVariations
+									};
+									updateProductDoc(selectedCat, item)
+										.then(() => {
+											this.props.history.replace('/admin/dashboard/add-product');
+											this.resetForm();
+										})
+										.catch((err) => this.setState({ error: err, loading: false }));
+								}
+							});
+						}
+					);
+				} else {
+					// Push to array if image is already uploaded
+					updateVariations.push(v);
+				}
+
+				if (this.props.variations.length === updateVariations.length) {
+					const item = {
+						id: selectedEditItem.id,
+						category: selectedSubCat,
+						routeName: slugify(selectedSubCat),
+						imageUrl: selectedEditItem.imageUrl,
+						name: this.state.title,
+						description: this.state.description,
+						price: this.state.price,
+						variations: updateVariations
+					};
+					updateProductDoc(selectedCat, item)
+						.then(() => {
+							this.props.history.replace('/admin/dashboard/add-product');
+							this.resetForm();
+						})
+						.catch((err) => this.setState({ error: err, loading: false }));
+				}
+			});
 		} else {
 			const path = uuidv1();
 			const uploadtask = storage.ref(`images/${path}/${image.name}`).put(image);
@@ -177,8 +231,8 @@ class AddProduct extends React.Component {
 					storage.ref(`images/${path}`).child(image.name).getDownloadURL().then((url) => {
 						// Uploading product @variations images
 						const imageUrl = url;
-						if (variations) {
-							variations.forEach((variation) => {
+						if (this.props.variations) {
+							this.props.variations.forEach((variation) => {
 								const path = uuidv1();
 								storage.ref(`images/${path}/${variation.name}`).put(variation).on(
 									'state_changed',
@@ -198,7 +252,7 @@ class AddProduct extends React.Component {
 											.then((url) => {
 												variationsImages.push(url);
 
-												if (variations.length === variationsImages.length) {
+												if (this.props.variations.length === variationsImages.length) {
 													const item = {
 														id: Math.random(),
 														routeName: selectedSubCat
@@ -238,7 +292,7 @@ class AddProduct extends React.Component {
 	validateForm = () => {
 		const { title, selectedCat, selectedSubCat, description, price, image } = this.state;
 
-		if (title && selectedCat && description && price && image) {
+		if (title && selectedCat && selectedSubCat && description && price && image) {
 			return true;
 		}
 
@@ -246,8 +300,11 @@ class AddProduct extends React.Component {
 	};
 
 	resetForm = () => {
+		// Setting store @variations to default
+		this.props.clearVariations([]);
 		this.setState({
 			loading: false,
+			error: '',
 			categories: [],
 			subCategories: [],
 			variations: [],
@@ -264,7 +321,7 @@ class AddProduct extends React.Component {
 	};
 
 	render() {
-		const { title, description, price, loading, editCategory, selectedCat, variations } = this.state;
+		const { title, description, price, loading, editCategory, selectedCat, variations, error } = this.state;
 		const selectedEditItem = this.props.location.state;
 
 		return (
@@ -277,6 +334,7 @@ class AddProduct extends React.Component {
 
 						<div className="row col-12">
 							<div className="col-md-6">
+								{error && <Alert msg={error} />}
 								<input
 									type="text"
 									name="title"
@@ -349,7 +407,7 @@ class AddProduct extends React.Component {
 										Choose image...
 									</label>
 								</div>
-								<div className="d-flex bd-highlight justify-content-center mt-3">
+								{/* <div className="d-flex bd-highlight justify-content-center mt-3">
 									{selectedEditItem &&
 										this.state.variations.map((v) => (
 											<div className="p-2 bd-highlight bg-light border m-2" key={v}>
@@ -364,9 +422,10 @@ class AddProduct extends React.Component {
 												</div>
 											</div>
 										))}
-								</div>
-								{!selectedEditItem && (
-									<ImageUploader
+								</div> */}
+
+								<ImagesUpload images={selectedEditItem && selectedEditItem.variations} />
+								{/* <ImageUploader
 										withPreview={true}
 										withIcon={true}
 										buttonText="Choose variations"
@@ -375,10 +434,10 @@ class AddProduct extends React.Component {
 										maxFileSize={2000000}
 										singleImage={true}
 										onChange={this.onDrop}
-									/>
-								)}
+									/> */}
+
 								<button
-									className="btn btn-danger float-right mt-5 mb-2"
+									className="btn btn-danger float-right mt-3 mb-2"
 									disabled={loading}
 									onClick={this.addProduct}
 									value={selectedEditItem ? 'Update' : 'Submit'}
@@ -421,4 +480,12 @@ class AddProduct extends React.Component {
 	}
 }
 
-export default AddProduct;
+const mapStateToProps = (state) => ({
+	variations: state.addProductReducer.variations
+});
+
+const mapDispatchToProps = (dispatch) => ({
+	clearVariations: (variations) => dispatch(addVariations(variations))
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(AddProduct);

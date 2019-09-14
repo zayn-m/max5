@@ -1,11 +1,17 @@
 .product-detail {
-    margin-top: 2rem;
-    height: 70vh;
+	margin-top: 2rem;
+	height: 70vh;
 }
 
+.product-detail__description {
+	height: 60%;
+}
 
 @media screen and (max-width: 980px) {
 	.product-detail {
-        height: auto;
-    }
+		height: auto;
+	}
+	.product-detail__description {
+		height: auto;
+	}
 }

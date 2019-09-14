@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { HOST_URL } from '../../settings';
+import './PurchaseItem.css';
 
 class PurchaseItem extends React.Component {
 	state = {

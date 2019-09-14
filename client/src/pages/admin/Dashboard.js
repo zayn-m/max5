@@ -82,7 +82,7 @@ class Dashboard extends React.Component {
 			<section className="dashboard-container m-3">
 				<h2>Dashboard</h2>
 				<div className="row p-0 no-gutters">
-					<DashboardCard title={'Total Revenue'} data={`$ ${revenue}`}>
+					<DashboardCard title={'Total Revenue'} data={`$${revenue}`}>
 						<i className="fas fa-hand-holding-usd" />
 					</DashboardCard>
 					<DashboardCard title={'Total Orders'} data={orders}>

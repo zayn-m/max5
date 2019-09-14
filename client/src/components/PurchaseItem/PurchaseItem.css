@@ -1,0 +1,6 @@
+@media screen and (max-width: 760px) {
+	.purchase-history__header--col {
+		visibility: hidden;
+		margin-bottom: -15px;
+	}
+}

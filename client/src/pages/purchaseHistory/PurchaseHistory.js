@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import { getUserOrders } from '../../firebase/firebaseUtils';
 
 import PurchaseItem from '../../components/PurchaseItem/PurchaseItem';
+
 class PurchaseHistory extends React.Component {
 	state = {
 		orders: []
@@ -22,16 +23,17 @@ class PurchaseHistory extends React.Component {
 					<div className="col-12 col-md-4">
 						<h3>Purchase history</h3>
 					</div>
-					<div className="col-md-2">
+
+					<div className="col-md-2 purchase-history__header--col">
 						<span>Address</span>
 					</div>
-					<div className="col-md-2">
+					<div className="col-md-2 purchase-history__header--col">
 						<span>Date</span>
 					</div>
-					<div className="col-md-2">
+					<div className="col-md-2 purchase-history__header--col">
 						<span>Total Price</span>
 					</div>
-					<div className="col-md-2">
+					<div className="col-md-2 purchase-history__header--col">
 						<span>Payment Type</span>
 					</div>
 				</div>

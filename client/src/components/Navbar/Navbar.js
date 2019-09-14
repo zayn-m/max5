@@ -13,7 +13,8 @@ import slugify from 'react-slugify';
 
 class Navbar extends React.Component {
 	state = {
-		subCategories: []
+		subCategories: [],
+		hide: false
 	};
 	unsubscribeSubCat = null;
 
@@ -29,8 +30,13 @@ class Navbar extends React.Component {
 		this.unsubscribeSubCat = null;
 	}
 
+	collapse = () => {
+		this.setState({ hide: false });
+	};
+
 	render() {
 		const { match, currentUser, hidden } = this.props;
+		const { hide } = this.state;
 		return (
 			<nav className="navbar navbar-expand-lg navbar-light bg-light sticky-top ">
 				<div className="container-fluid">
@@ -43,9 +49,11 @@ class Navbar extends React.Component {
 						aria-expanded="false"
 						aria-label="Toggle navigation"
 					>
-						<span className="navbar-toggler-icon" />
+						<span className="navbar-toggler-icon" onClick={() => this.setState({ hide: !hide })} />
 					</button>
-					<Logo path="/" />
+					<span onClick={this.collapse}>
+						<Logo path="/" />{' '}
+					</span>
 
 					<div className="navbar-item text-dark d-block d-md-none d-lg-none ">
 						<CartIcon />
@@ -53,7 +61,7 @@ class Navbar extends React.Component {
 						{!hidden && <CartDropdown />}
 					</div>
 
-					<div className="collapse navbar-collapse ml-md-5" id="navbarSupportedContent">
+					<div className={`collapse ${hide && 'show'}  navbar-collapse ml-md-5`} id="navbarSupportedContent">
 						<ul className="navbar-nav mr-auto">
 							<li
 								className="nav-item dropdown"
@@ -72,7 +80,12 @@ class Navbar extends React.Component {
 								</a>
 								<div className="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
 									{this.state.subCategories.map((s) => (
-										<Link to={`/jiu-jitsu/${slugify(s)}`} className="dropdown-item" key={s}>
+										<Link
+											to={`/jiu-jitsu/${slugify(s)}`}
+											className="dropdown-item"
+											key={s}
+											onClick={this.collapse}
+										>
 											{s}
 										</Link>
 									))}
@@ -95,7 +108,12 @@ class Navbar extends React.Component {
 								</a>
 								<div className="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
 									{this.state.subCategories.map((s) => (
-										<Link to={`/apparel/${slugify(s)}`} className="dropdown-item" key={s}>
+										<Link
+											to={`/apparel/${slugify(s)}`}
+											className="dropdown-item"
+											key={s}
+											onClick={this.collapse}
+										>
 											{s}
 										</Link>
 									))}
@@ -103,7 +121,7 @@ class Navbar extends React.Component {
 							</li>
 
 							<li className={`nav-item ${match.path === '/boxing' ? 'active' : ''}`}>
-								<Link to="/boxing" className="nav-link">
+								<Link to="/boxing" className="nav-link" onClick={this.collapse}>
 									Boxing
 								</Link>
 							</li>
@@ -117,7 +135,7 @@ class Navbar extends React.Component {
 
 							<li className={`nav-item dropdown  ${match.path === '/account' ? 'active' : ''}`}>
 								{!currentUser ? (
-									<Link to="/account" className="nav-link">
+									<Link to="/account" className="nav-link" onClick={this.collapse}>
 										Account
 									</Link>
 								) : (
@@ -135,10 +153,14 @@ class Navbar extends React.Component {
 										</Link>
 
 										<div className="dropdown-menu" aria-labelledby="navbarDropdown">
-											<a className="dropdown-item" href="#">
+											{/* <a className="dropdown-item" href="#">
 												Profile
-											</a>
-											<Link to="/user/purchase-history" className="dropdown-item">
+											</a> */}
+											<Link
+												to="/user/purchase-history"
+												className="dropdown-item"
+												onClick={this.collapse}
+											>
 												Purchase history
 											</Link>
 											<div className="dropdown-divider" />

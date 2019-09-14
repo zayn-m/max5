@@ -62,7 +62,7 @@ class ProductDetail extends React.Component {
 						/>
 						<section className="row product-detail">
 							<div className="col-md-6">
-								<div style={{ height: '60%' }}>
+								<div className="product-detail__description">
 									<h1>{product.name}</h1>
 									<p className="text-justify">{product.description}</p>
 									<h2>
@@ -70,6 +70,28 @@ class ProductDetail extends React.Component {
 									</h2>
 								</div>
 								<br />
+								<label className="font-weight-bolder">Size</label>
+								<div className="d-flex mb-1">
+									<div className="custom-control custom-radio m-1">
+										<input id="small" type="radio" name="size" className="custom-control-input" />
+										<label className="custom-control-label" htmlFor="small">
+											Small
+										</label>
+									</div>
+									<div className="custom-control custom-radio m-1">
+										<input id="medium" type="radio" name="size" className="custom-control-input" />
+										<label className="custom-control-label" htmlFor="medium">
+											Medium
+										</label>
+									</div>
+									<div className="custom-control custom-radio m-1">
+										<input id="large" type="radio" name="size" className="custom-control-input" />
+										<label className="custom-control-label" htmlFor="large">
+											Large
+										</label>
+									</div>
+								</div>
+								<label className="font-weight-bolder">Quantity</label>
 								<div className="d-flex flex-row">
 									<button
 										className="btn btn-light border"
@@ -95,7 +117,7 @@ class ProductDetail extends React.Component {
 									Add to Cart
 								</button>
 							</div>
-							<div className="col-md-6">
+							<div className="col-md-6 ">
 								<img src={displayImage} style={{ width: '100%', height: '35rem' }} alt={product.name} />
 
 								<Variations

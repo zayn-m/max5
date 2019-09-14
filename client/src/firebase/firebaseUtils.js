@@ -152,9 +152,46 @@ export const addNewProd = async (collectionKey, subTitle, objectsToAdd) => {
 	});
 };
 
-export const getProducts = async (title, subTitle, startAt, itemsPerPage) => {
+export const getProducts = async (title, subTitle, startAt, itemsPerPage, min, max) => {
 	const productRef = firestore.collection('products').doc(slugify(title));
 	const snapshot = await productRef.get();
+
+	// Will execute for filtering by price
+	if (min && max) {
+		if (snapshot.exists) {
+			const items = [];
+			const data = [];
+			snapshot.data().items.forEach((item) => {
+				if (+item.price >= +min && +item.price <= +max) {
+					items.push(item);
+				}
+			});
+			// For pagination
+			for (let i = startAt; i < itemsPerPage + startAt; i++) {
+				if (!items[i]) {
+					break;
+				} else {
+					if (items[i].routeName === slugify(subTitle)) {
+						data.push(items[i]);
+					}
+				}
+			}
+			let finalData;
+
+			if (data.length) {
+				finalData = {
+					title: snapshot.data().title,
+					routeName: snapshot.data().routeName,
+					items: [ ...data ],
+					totalItemsCount: items.length
+				};
+			} else {
+				finalData = null;
+			}
+
+			return finalData;
+		}
+	}
 
 	// Check if sub category exists
 	if (subTitle) {

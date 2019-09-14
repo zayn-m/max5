@@ -37,10 +37,14 @@ const stripeCheckoutButton = ({ price, currentUser, cartItems, clearCart, done }
 
 	return (
 		<StripeCheckout
-			label="Pay Now"
+			label={
+				<span>
+					<i className="fas fa-credit-card" /> Stripe
+				</span>
+			}
 			name="MAX 5"
 			email={currentUser ? currentUser.email : ''}
-			billingAddress
+			billingAddress={false}
 			shippingAddress={false}
 			description={`Your total is $${price.toFixed(2)}`}
 			amount={priceStripe}

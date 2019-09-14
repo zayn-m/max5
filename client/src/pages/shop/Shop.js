@@ -1,5 +1,5 @@
 import React from 'react';
-import { getProducts } from '../../firebase/firebaseUtils';
+import { getProducts, getProductsByPriceFilter } from '../../firebase/firebaseUtils';
 
 import './Shop.css';
 
@@ -7,7 +7,7 @@ import Fade from 'react-reveal/Fade';
 import Pagination from 'react-js-pagination';
 
 import Spinner from '../../components/Spinner/Spinner';
-
+import PriceFilter from '../../components/PriceFilter/PriceFilter';
 import NoDataImg from '../../assets/images/error/no-data.png';
 
 class Shop extends React.Component {
@@ -19,6 +19,8 @@ class Shop extends React.Component {
 
 	state = {
 		loading: true,
+		min: '',
+		max: '',
 		products: null,
 		currentPage: 1,
 		itemsPerPage: 8,
@@ -52,14 +54,18 @@ class Shop extends React.Component {
 		this.setState({ currentPage: pageNumber });
 	};
 
+	handleFilterChange = async () => {
+		this.fetchData();
+	};
+
 	fetchData = async () => {
 		let data;
-		const { currentPage, itemsPerPage } = this.state;
+		const { currentPage, itemsPerPage, min, max } = this.state;
 		const { category, subCategory } = this.props.match.params;
 		const startAt = currentPage * itemsPerPage - itemsPerPage;
 
 		if (category) {
-			data = await getProducts(category, subCategory, startAt, itemsPerPage);
+			data = await getProducts(category, subCategory, startAt, itemsPerPage, min, max);
 		} else {
 			data = await getProducts('boxing', startAt, itemsPerPage);
 		}
@@ -126,7 +132,8 @@ class Shop extends React.Component {
 									<div className="col-12 col-md-7">
 										<div
 											id="circle-wrapper"
-											onClick={() => this.selectProductHandler(item, this.state.products.title)}
+											onClick={() =>
+												this.selectProductHandler(item, this.state.products.routeName)}
 										>
 											<img
 												src={item.imageUrl}
@@ -170,7 +177,13 @@ class Shop extends React.Component {
 				<h1 className="text-center m-1 display-4 text-primary text-uppercase font-italic font-weight-bold">
 					{this.state.products && this.state.products.title}
 				</h1>
-
+				<PriceFilter
+					min={this.state.min}
+					max={this.state.max}
+					handleMin={(e) => this.setState({ min: e.target.value })}
+					handleMax={(e) => this.setState({ max: e.target.value })}
+					handleFilter={this.handleFilterChange}
+				/>
 				{this.state.loading ? (
 					<div className="row">
 						<Spinner width="100px" height="100px" />
