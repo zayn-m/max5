@@ -79,21 +79,20 @@ export const createUserCart = async (userAuth, cartItems) => {
 	}
 };
 
-export const createOrder = async (userAuth, order, items) => {
-	if (!userAuth) return { error: 'Unexpected error occurred' };
-
+export const createOrder = async (userData, order, items) => {
 	try {
 		const timestamp = new Date();
-		firestore
+		const orderNo = orderNumber();
+		await firestore
 			.collection('orders')
 			.add({
-				orderNo: orderNumber(),
+				orderNo,
 				createdAt: timestamp,
-				customer: userAuth,
+				customer: userData,
 				orderInfo: order,
 				items: items
 			})
-			.then(() => {
+			.then((res) => {
 				// Calculating total amount
 				let totalPrice = 0;
 				items.forEach((i) => {
@@ -105,6 +104,8 @@ export const createOrder = async (userAuth, order, items) => {
 					amount: totalPrice
 				});
 			});
+
+		return { orderNo };
 	} catch (e) {
 		console.log('Error when placing order.', e.message);
 	}

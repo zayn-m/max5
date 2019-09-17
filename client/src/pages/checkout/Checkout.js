@@ -12,6 +12,29 @@ import PaymentOptions from '../../components/PaymentOptions/PaymentOptions';
 import PaypalButton from '../../components/PaypalButton/PaypalButton';
 
 class Checkout extends React.Component {
+	state = {
+		controls: {
+			name: '',
+			email: '',
+			address: '',
+			address2: '',
+			city: '',
+			zip: ''
+		},
+		region: '',
+		country: '',
+		showPaymentMethod: false,
+		option: ''
+	};
+
+	componentDidMount() {
+		if (this.props.currentUser) {
+			const controls = { ...this.state.controls };
+			controls['email'] = this.props.currentUser.email;
+			this.setState({ controls: controls });
+		}
+	}
+
 	selectProductHandler = (id, category) => {
 		this.props.history.push({
 			pathname: `/shop/${category}/${id}`
@@ -22,8 +45,33 @@ class Checkout extends React.Component {
 		toast('Your order has been placed!');
 	};
 
+	handleInputChange = (e) => {
+		const { value, name } = e.target;
+
+		const controls = { ...this.state.controls };
+		controls[name] = value;
+		this.setState({ controls: controls });
+	};
+
+	selectCountry = (val) => {
+		this.setState({ country: val });
+	};
+
+	selectRegion = (val) => {
+		this.setState({ region: val });
+	};
+
+	submitHandler = (e) => {
+		e.preventDefault();
+		const { controls } = this.state;
+		if (controls.name && controls.email && controls.address) {
+			this.setState({ showPaymentMethod: true });
+		}
+	};
+
 	render() {
-		const { cartItems, total } = this.props;
+		const { showPaymentMethod, option, controls, region, country } = this.state;
+		const { cartItems, total, currentUser } = this.props;
 		return (
 			// <div className="checkout-page">
 			// 	<ToastContainer autoClose={2000} hideProgressBar={true} style={{ fontWeight: 'bold', color: '#000' }} />
@@ -85,23 +133,48 @@ class Checkout extends React.Component {
 						<span>TOTAL: ${total.toFixed(2)}</span>
 					</div>
 				</div>
-				{/* <div className="test-warning d-none">
-					*Please use the following test credit card for test payments*
-					<br />
-					4242 4242 4242 4242 - Exp: 01/20 - CVV: 123 <br />
-				</div> */}
+
 				<div className="row mb-5">
 					<div className="col-md-6">
-						<BillingForm />
+						<BillingForm
+							controls={controls}
+							region={region}
+							country={country}
+							currentUser={currentUser}
+							regionChange={this.selectRegion}
+							countryChange={this.selectCountry}
+							handleChange={this.handleInputChange}
+							submit={this.submitHandler}
+						/>
 					</div>
-					<div className="col-md-6">
-						<PaymentOptions>
-							<div className="text-center p-3">
-								<StripeCheckoutButton price={total} done={this.notify} />
-							</div>
-							<div className="text-center p-3">
-								<PaypalButton />
-							</div>
+					<div
+						className="col-md-6"
+						style={{ pointerEvents: !showPaymentMethod && 'none', opacity: !showPaymentMethod && '.8' }}
+					>
+						<PaymentOptions handleClick={(e) => this.setState({ option: e.target.value })}>
+							{!showPaymentMethod && (
+								<div className="m-3 text-center">
+									<label className="text-danger">*Please fill out the form to proceed.</label>
+								</div>
+							)}
+							{option === 'stripe' &&
+							showPaymentMethod && (
+								<div className="text-center p-3">
+									<StripeCheckoutButton
+										price={total}
+										userData={controls}
+										region={region}
+										country={country}
+										done={this.notify}
+									/>
+								</div>
+							)}
+							{option === 'paypal' &&
+							showPaymentMethod && (
+								<div className="text-center p-3">
+									<PaypalButton price={total} userData={controls} region={region} country={country} />
+								</div>
+							)}
 						</PaymentOptions>
 					</div>
 				</div>

@@ -43,7 +43,7 @@ class PurchaseItem extends React.Component {
 							) : (
 								<div className="d-flex flex-column">
 									{order.items.map((i) => (
-										<div class="p-1 border-bottom mb-3">
+										<div key={i} className="p-1 border-bottom mb-3">
 											{i.name}&nbsp;x&nbsp;{i.quantity}&nbsp;-&nbsp;{i.price}
 										</div>
 									))}

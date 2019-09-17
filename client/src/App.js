@@ -17,6 +17,7 @@ import ProductDetail from './pages/productDetail/ProductDetail';
 import PurchaseHistory from './pages/purchaseHistory/PurchaseHistory';
 import Admin from './pages/admin/Admin';
 import Auth from './pages/admin/Auth';
+import PaymentSuccess from './pages/PaymentSuccess/PaymentSuccess';
 
 class App extends Component {
 	state = {
@@ -71,6 +72,7 @@ class App extends Component {
 						<Switch>
 							<Route exact path="/" component={Home} />
 							<Route path="/checkout" component={Checkout} />
+							<Route path="/payment-success" component={PaymentSuccess} />
 							<Route exact path="/shop" component={Shop} />
 							<Route path="/shop/:category/:productId" component={ProductDetail} />
 							<Route

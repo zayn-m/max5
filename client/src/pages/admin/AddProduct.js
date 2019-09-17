@@ -7,6 +7,7 @@ import PlaceholderImg from '../../assets/images/placeholder.png';
 import slugify from 'react-slugify';
 import ImageUploader from 'react-images-upload';
 import ImagesUpload from '../../components/ImagesUpload/ImagesUpload';
+import { ToastContainer, toast } from 'react-toastify';
 
 import Alert from '../../components/Alert/Alert';
 import Variations from '../../components/Variations/Variations';
@@ -182,10 +183,7 @@ class AddProduct extends React.Component {
 										variations: updateVariations
 									};
 									updateProductDoc(selectedCat, item)
-										.then(() => {
-											this.props.history.replace('/admin/dashboard/add-product');
-											this.resetForm();
-										})
+										.then(() => {})
 										.catch((err) => this.setState({ error: err, loading: false }));
 								}
 							});
@@ -209,8 +207,8 @@ class AddProduct extends React.Component {
 					};
 					updateProductDoc(selectedCat, item)
 						.then(() => {
-							this.props.history.replace('/admin/dashboard/add-product');
-							this.resetForm();
+							toast('Updated successfuly');
+							this.setState({ loading: false, error: '' });
 						})
 						.catch((err) => this.setState({ error: err, loading: false }));
 				}
@@ -326,6 +324,7 @@ class AddProduct extends React.Component {
 
 		return (
 			<section>
+				<ToastContainer autoClose={2000} hideProgressBar={true} style={{ fontWeight: 'bold', color: '#000' }} />
 				<div className="row no-gutters">
 					<div className="col-12 col-md-9">
 						<h1 className="col-12 text-left m-3">

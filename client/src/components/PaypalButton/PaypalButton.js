@@ -1,20 +1,33 @@
 import React from 'react';
 import { PayPalButton } from 'react-paypal-button-v2';
+import axios from 'axios';
 
-const paypalButton = () => (
+const paypalButton = ({ price, userData, region, country, currentUser, cartItems, clearCart, done, history }) => (
 	<PayPalButton
-		amount="0.01"
+		amount={price.toFixed(2)}
 		onSuccess={(details, data) => {
 			console.log(details, data);
-			alert('Transaction completed by ' + details.payer.name.given_name);
-
-			// OPTIONAL: Call your server to save the transaction
-			return fetch('/paypal-transaction-complete', {
+			axios({
+				url: 'paypal-payment',
 				method: 'post',
-				body: JSON.stringify({
-					orderID: data.orderID
+				data: {
+					orderID: data.orderID,
+					payerID: data.payerID
+				}
+			})
+				.then((res) => {
+					// alert('Payment successful');
+					console.log(res);
+					if (res.status === 'success') {
+					}
 				})
-			});
+				.catch((err) => {
+					console.log('Payment error: ', err);
+				});
+		}}
+		options={{
+			clientId: 'Af925DkD_aMbpDdIfOuwTulUeOpHvRhSMrhF50Hmp2ugwZZCOj0Ie7GEd8lt8eQTdjf77slKoniVWPht',
+			disableCard: [ 'visa', 'mastercard', 'amex', 'discover', 'jcb', 'elo', 'hiper' ]
 		}}
 	/>
 );
